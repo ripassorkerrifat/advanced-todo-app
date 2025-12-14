@@ -11,10 +11,8 @@ import {useTheme} from "@/store/ThemeContext";
 import React from "react";
 import {
      Alert,
-     Platform,
      ScrollView,
      StyleSheet,
-     Switch,
      TouchableOpacity,
      View,
 } from "react-native";
@@ -23,14 +21,10 @@ import {SafeAreaView} from "react-native-safe-area-context";
 export default function SettingsScreen() {
      const {currentTheme, themeMode, setThemeMode} = useTheme();
      const {tasks, loadTasks} = useTasks();
-     const backgroundColor =
-          currentTheme === "dark"
-               ? Colors.dark.background
-               : Colors.light.background;
-     const cardColor =
-          currentTheme === "dark" ? Colors.dark.card : Colors.light.card;
-     const borderColor =
-          currentTheme === "dark" ? Colors.dark.border : Colors.light.border;
+     const backgroundColor = Colors[currentTheme].background;
+     const cardColor = Colors[currentTheme].card;
+     const borderColor = Colors[currentTheme].border;
+     const tintColor = Colors[currentTheme].tint;
 
      const handleClearAll = () => {
           Alert.alert(
@@ -65,174 +59,271 @@ export default function SettingsScreen() {
           );
      };
 
+     const completedCount = tasks.filter((t) => t.completed).length;
+     const pendingCount = tasks.filter((t) => !t.completed).length;
+
      return (
           <SafeAreaView
                style={[styles.container, {backgroundColor}]}
                edges={["top"]}>
-               <ScrollView
-                    style={styles.scrollView}
-                    contentContainerStyle={styles.content}>
-                    {/* Header */}
-                    <View style={styles.header}>
+               {/* Fixed Header */}
+               <View
+                    style={[
+                         styles.header,
+                         {
+                              backgroundColor: backgroundColor,
+                              borderBottomColor: borderColor,
+                         },
+                    ]}>
+                    <View style={styles.titleSection}>
                          <ThemedText type="title" style={styles.title}>
                               Settings
                          </ThemedText>
-                    </View>
-
-                    {/* Theme Section */}
-                    <View style={[styles.card, {backgroundColor: cardColor}]}>
                          <ThemedText
-                              type="subtitle"
-                              style={styles.sectionTitle}>
-                              Appearance
+                              type="default"
+                              style={[styles.subtitle, {opacity: 0.6}]}>
+                              Customize your app
                          </ThemedText>
+                    </View>
+               </View>
 
-                         <View style={styles.themeRow}>
-                              <View style={styles.themeInfo}>
-                                   <ThemedText
-                                        type="defaultSemiBold"
-                                        style={styles.label}>
-                                        Theme
-                                   </ThemedText>
-                                   <ThemedText
-                                        type="default"
-                                        style={[
-                                             styles.subLabel,
-                                             {opacity: 0.6},
-                                        ]}>
-                                        {themeMode === "system"
-                                             ? "System Default"
-                                             : themeMode === "dark"
-                                             ? "Dark Mode"
-                                             : "Light Mode"}
-                                   </ThemedText>
+               <ScrollView
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.content}
+                    showsVerticalScrollIndicator={false}>
+                    {/* Appearance Section */}
+                    <View
+                         style={[
+                              styles.sectionCard,
+                              {backgroundColor: cardColor},
+                         ]}>
+                         <View style={styles.sectionHeader}>
+                              <View
+                                   style={[
+                                        styles.iconBadge,
+                                        {backgroundColor: tintColor + "20"},
+                                   ]}>
+                                   <IconSymbol
+                                        name="gearshape.fill"
+                                        size={16}
+                                        color={tintColor}
+                                   />
                               </View>
-                              <Switch
-                                   value={currentTheme === "dark"}
-                                   onValueChange={(value: boolean) =>
-                                        setThemeMode(value ? "dark" : "light")
-                                   }
-                                   trackColor={{
-                                        false: "#E5E7EB",
-                                        true: Colors.dark.primary,
-                                   }}
-                                   thumbColor={
-                                        currentTheme === "dark"
-                                             ? "#FFFFFF"
-                                             : "#FFFFFF"
-                                   }
-                              />
+                              <ThemedText
+                                   type="defaultSemiBold"
+                                   style={styles.sectionTitle}>
+                                   Appearance
+                              </ThemedText>
                          </View>
+
+                         <ThemedText
+                              type="default"
+                              style={[
+                                   styles.sectionDescription,
+                                   {opacity: 0.6},
+                              ]}>
+                              Choose your preferred theme
+                         </ThemedText>
 
                          <View style={styles.themeOptions}>
                               {(["light", "dark", "system"] as const).map(
-                                   (mode) => (
-                                        <TouchableOpacity
-                                             key={mode}
-                                             onPress={() => setThemeMode(mode)}
-                                             style={[
-                                                  styles.themeOption,
-                                                  {
-                                                       backgroundColor:
-                                                            themeMode === mode
-                                                                 ? Colors[
-                                                                        currentTheme
-                                                                   ].primary
-                                                                 : "transparent",
-                                                       borderColor:
-                                                            themeMode === mode
-                                                                 ? Colors[
-                                                                        currentTheme
-                                                                   ].primary
-                                                                 : borderColor,
-                                                  },
-                                             ]}>
-                                             <ThemedText
+                                   (mode) => {
+                                        const isActive = themeMode === mode;
+                                        const modeLabels = {
+                                             light: "Light",
+                                             dark: "Dark",
+                                             system: "System",
+                                        };
+
+                                        return (
+                                             <TouchableOpacity
+                                                  key={mode}
+                                                  onPress={() =>
+                                                       setThemeMode(mode)
+                                                  }
+                                                  activeOpacity={0.7}
                                                   style={[
-                                                       styles.themeOptionText,
+                                                       styles.themeOption,
                                                        {
-                                                            color:
-                                                                 themeMode ===
-                                                                 mode
+                                                            backgroundColor:
+                                                                 isActive
+                                                                      ? tintColor
+                                                                      : "transparent",
+                                                            borderColor:
+                                                                 isActive
+                                                                      ? tintColor
+                                                                      : borderColor,
+                                                       },
+                                                  ]}>
+                                                  {isActive && (
+                                                       <IconSymbol
+                                                            name="checkmark"
+                                                            size={14}
+                                                            color="#FFFFFF"
+                                                            style={
+                                                                 styles.checkIcon
+                                                            }
+                                                       />
+                                                  )}
+                                                  <ThemedText
+                                                       style={[
+                                                            styles.themeOptionText,
+                                                            {
+                                                                 color: isActive
                                                                       ? "#FFFFFF"
                                                                       : Colors[
                                                                              currentTheme
                                                                         ].text,
-                                                       },
-                                                  ]}>
-                                                  {mode === "system"
-                                                       ? "System"
-                                                       : mode === "dark"
-                                                       ? "Dark"
-                                                       : "Light"}
-                                             </ThemedText>
-                                        </TouchableOpacity>
-                                   )
+                                                            },
+                                                       ]}>
+                                                       {modeLabels[mode]}
+                                                  </ThemedText>
+                                             </TouchableOpacity>
+                                        );
+                                   }
                               )}
                          </View>
                     </View>
 
-                    {/* App Information */}
-                    <View style={[styles.card, {backgroundColor: cardColor}]}>
-                         <ThemedText
-                              type="subtitle"
-                              style={styles.sectionTitle}>
-                              App Information
-                         </ThemedText>
-
-                         <View
-                              style={[
-                                   styles.row,
-                                   {borderBottomColor: borderColor},
-                              ]}>
-                              <ThemedText type="default" style={styles.label}>
-                                   Total Tasks
-                              </ThemedText>
-                              <ThemedText type="defaultSemiBold">
-                                   {tasks.length}
-                              </ThemedText>
-                         </View>
-
-                         <View
-                              style={[
-                                   styles.row,
-                                   {borderBottomColor: borderColor},
-                              ]}>
-                              <ThemedText type="default" style={styles.label}>
-                                   Completed Tasks
-                              </ThemedText>
-                              <ThemedText type="defaultSemiBold">
-                                   {tasks.filter((t) => t.completed).length}
+                    {/* Statistics Section */}
+                    <View
+                         style={[
+                              styles.sectionCard,
+                              {backgroundColor: cardColor},
+                         ]}>
+                         <View style={styles.sectionHeader}>
+                              <View
+                                   style={[
+                                        styles.iconBadge,
+                                        {backgroundColor: tintColor + "20"},
+                                   ]}>
+                                   <IconSymbol
+                                        name="chart.bar"
+                                        size={16}
+                                        color={tintColor}
+                                   />
+                              </View>
+                              <ThemedText
+                                   type="defaultSemiBold"
+                                   style={styles.sectionTitle}>
+                                   Statistics
                               </ThemedText>
                          </View>
 
-                         <View style={styles.row}>
-                              <ThemedText type="default" style={styles.label}>
-                                   Pending Tasks
-                              </ThemedText>
-                              <ThemedText type="defaultSemiBold">
-                                   {tasks.filter((t) => !t.completed).length}
-                              </ThemedText>
+                         <View style={styles.statsGrid}>
+                              <View style={styles.statItem}>
+                                   <ThemedText
+                                        type="default"
+                                        style={[
+                                             styles.statLabel,
+                                             {opacity: 0.6},
+                                        ]}>
+                                        Total
+                                   </ThemedText>
+                                   <ThemedText
+                                        type="defaultSemiBold"
+                                        style={styles.statValue}>
+                                        {tasks.length}
+                                   </ThemedText>
+                              </View>
+                              <View
+                                   style={[
+                                        styles.statDivider,
+                                        {backgroundColor: borderColor},
+                                   ]}
+                              />
+                              <View style={styles.statItem}>
+                                   <ThemedText
+                                        type="default"
+                                        style={[
+                                             styles.statLabel,
+                                             {opacity: 0.6},
+                                        ]}>
+                                        Completed
+                                   </ThemedText>
+                                   <ThemedText
+                                        type="defaultSemiBold"
+                                        style={[
+                                             styles.statValue,
+                                             {color: "#10B981"},
+                                        ]}>
+                                        {completedCount}
+                                   </ThemedText>
+                              </View>
+                              <View
+                                   style={[
+                                        styles.statDivider,
+                                        {backgroundColor: borderColor},
+                                   ]}
+                              />
+                              <View style={styles.statItem}>
+                                   <ThemedText
+                                        type="default"
+                                        style={[
+                                             styles.statLabel,
+                                             {opacity: 0.6},
+                                        ]}>
+                                        Pending
+                                   </ThemedText>
+                                   <ThemedText
+                                        type="defaultSemiBold"
+                                        style={[
+                                             styles.statValue,
+                                             {color: "#F59E0B"},
+                                        ]}>
+                                        {pendingCount}
+                                   </ThemedText>
+                              </View>
                          </View>
                     </View>
 
-                    {/* Data Management */}
-                    <View style={[styles.card, {backgroundColor: cardColor}]}>
+                    {/* Data Management Section */}
+                    <View
+                         style={[
+                              styles.sectionCard,
+                              {backgroundColor: cardColor},
+                         ]}>
+                         <View style={styles.sectionHeader}>
+                              <View
+                                   style={[
+                                        styles.iconBadge,
+                                        {backgroundColor: "#EF444420"},
+                                   ]}>
+                                   <IconSymbol
+                                        name="trash"
+                                        size={16}
+                                        color="#EF4444"
+                                   />
+                              </View>
+                              <ThemedText
+                                   type="defaultSemiBold"
+                                   style={styles.sectionTitle}>
+                                   Data Management
+                              </ThemedText>
+                         </View>
+
                          <ThemedText
-                              type="subtitle"
-                              style={styles.sectionTitle}>
-                              Data Management
+                              type="default"
+                              style={[
+                                   styles.sectionDescription,
+                                   {opacity: 0.6},
+                              ]}>
+                              Permanently delete all your tasks
                          </ThemedText>
 
                          <TouchableOpacity
                               style={[
                                    styles.dangerButton,
-                                   {borderColor: "#EF4444"},
+                                   {
+                                        backgroundColor: "#EF444410",
+                                        borderColor: "#EF4444",
+                                   },
                               ]}
-                              onPress={handleClearAll}>
+                              onPress={handleClearAll}
+                              activeOpacity={0.7}>
                               <IconSymbol
-                                   name="trash"
-                                   size={20}
+                                   name="trash.fill"
+                                   size={18}
                                    color="#EF4444"
                               />
                               <ThemedText
@@ -247,10 +338,21 @@ export default function SettingsScreen() {
 
                     {/* Footer */}
                     <View style={styles.footer}>
-                         <ThemedText type="default" style={styles.footerText}>
-                              Advanced Todo App v1.0.0
-                         </ThemedText>
-                         <ThemedText type="default" style={styles.footerText}>
+                         <View style={styles.footerContent}>
+                              <IconSymbol
+                                   name="paperplane.fill"
+                                   size={16}
+                                   color={tintColor}
+                              />
+                              <ThemedText
+                                   type="default"
+                                   style={[styles.footerText, {opacity: 0.6}]}>
+                                   Advanced Todo App v1.0.0
+                              </ThemedText>
+                         </View>
+                         <ThemedText
+                              type="default"
+                              style={[styles.footerText, {opacity: 0.5}]}>
                               Built with React Native & Expo
                          </ThemedText>
                     </View>
@@ -263,90 +365,137 @@ const styles = StyleSheet.create({
      container: {
           flex: 1,
      },
+     header: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+          borderBottomWidth: 1,
+     },
+     titleSection: {
+          flex: 1,
+     },
+     title: {
+          fontSize: 24,
+          fontWeight: "700",
+          marginBottom: 2,
+     },
+     subtitle: {
+          fontSize: 13,
+     },
      scrollView: {
           flex: 1,
      },
      content: {
-          padding: 16,
-     },
-     header: {
-          paddingBottom: 24,
-          paddingTop: Platform.OS === "ios" ? 0 : 20,
-     },
-     title: {
-          fontSize: 32,
-          fontWeight: "700",
-     },
-     card: {
-          borderRadius: 16,
           padding: 20,
+          paddingBottom: 40,
+     },
+     sectionCard: {
+          borderRadius: 16,
+          padding: 16,
           marginBottom: 16,
+          borderWidth: 1,
+          borderColor: "transparent",
+     },
+     sectionHeader: {
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 8,
+          gap: 10,
+     },
+     iconBadge: {
+          width: 28,
+          height: 28,
+          borderRadius: 14,
+          justifyContent: "center",
+          alignItems: "center",
      },
      sectionTitle: {
-          fontSize: 18,
-          fontWeight: "600",
-          marginBottom: 16,
-     },
-     themeRow: {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-     },
-     themeInfo: {
-          flex: 1,
-     },
-     label: {
-          fontSize: 16,
-          marginBottom: 4,
-     },
-     subLabel: {
           fontSize: 14,
+          fontWeight: "700",
+          letterSpacing: 0.2,
+     },
+     sectionDescription: {
+          fontSize: 13,
+          marginBottom: 16,
      },
      themeOptions: {
           flexDirection: "row",
-          gap: 8,
+          gap: 10,
      },
      themeOption: {
           flex: 1,
-          paddingVertical: 10,
-          paddingHorizontal: 16,
-          borderRadius: 12,
-          borderWidth: 1,
+          flexDirection: "row",
           alignItems: "center",
+          justifyContent: "center",
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          borderRadius: 16,
+          borderWidth: 1.5,
+          gap: 6,
+          minHeight: 44,
+     },
+     checkIcon: {
+          marginRight: 2,
      },
      themeOptionText: {
           fontSize: 14,
+          fontWeight: "600",
+          letterSpacing: 0.2,
+     },
+     statsGrid: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-around",
+          paddingVertical: 8,
+     },
+     statItem: {
+          flex: 1,
+          alignItems: "center",
+          gap: 4,
+     },
+     statDivider: {
+          width: 1,
+          height: 40,
+          opacity: 0.3,
+     },
+     statLabel: {
+          fontSize: 12,
           fontWeight: "500",
      },
-     row: {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingVertical: 12,
-          borderBottomWidth: 1,
+     statValue: {
+          fontSize: 24,
+          fontWeight: "700",
      },
      dangerButton: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 12,
-          padding: 16,
-          borderRadius: 12,
-          borderWidth: 1,
           justifyContent: "center",
+          gap: 10,
+          paddingVertical: 14,
+          paddingHorizontal: 16,
+          borderRadius: 12,
+          borderWidth: 1.5,
+          minHeight: 50,
      },
      dangerText: {
           fontSize: 16,
           fontWeight: "600",
+          letterSpacing: 0.2,
      },
      footer: {
+          paddingTop: 16,
           paddingBottom: 32,
           alignItems: "center",
-          gap: 4,
-          marginTop: 8,
+          gap: 8,
+     },
+     footerContent: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 6,
      },
      footerText: {
           fontSize: 12,
-          opacity: 0.6,
      },
 });

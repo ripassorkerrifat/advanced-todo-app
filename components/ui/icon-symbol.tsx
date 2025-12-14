@@ -29,10 +29,18 @@ const MAPPING = {
      "trash.fill": "delete",
      checkmark: "check",
      "checkmark.circle": "check-circle",
+     "checkmark.circle.fill": "check-circle",
      calendar: "calendar-today",
      "xmark.circle.fill": "cancel",
      "list.bullet": "list",
      pencil: "edit",
+     envelope: "email",
+     phone: "phone",
+     "text.alignleft": "format-align-left",
+     "doc.text": "description",
+     folder: "folder",
+     flag: "flag",
+     "chart.bar": "bar-chart",
 } as IconMapping;
 
 /**

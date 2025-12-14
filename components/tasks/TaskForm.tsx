@@ -3,7 +3,6 @@
  */
 
 import {ThemedText} from "@/components/themed-text";
-import {ThemedView} from "@/components/themed-view";
 import {IconSymbol} from "@/components/ui/icon-symbol";
 import {Colors} from "@/constants/theme";
 import {useTheme} from "@/store/ThemeContext";
@@ -14,7 +13,6 @@ import {
      Platform,
      ScrollView,
      StyleSheet,
-     Text,
      TextInput,
      TouchableOpacity,
      View,
@@ -55,7 +53,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           : Colors.light.background;
      const textColor = isDark ? Colors.dark.text : Colors.light.text;
      const borderColor = isDark ? Colors.dark.border : Colors.light.border;
-     const inputBackground = isDark ? Colors.dark.card : "#F9F9F9";
 
      const handleSubmit = () => {
           if (!title.trim()) {
@@ -83,240 +80,328 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           TaskPriority.HIGH,
      ];
 
+     const cardColor = isDark ? Colors.dark.card : Colors.light.card;
+     const tintColor = Colors[currentTheme].tint;
+
      return (
-          <ScrollView style={[styles.container, {backgroundColor}]}>
-               <ThemedView style={styles.form}>
-                    {/* Title */}
-                    <View style={styles.section}>
+          <ScrollView
+               style={[styles.container, {backgroundColor}]}
+               contentContainerStyle={styles.contentContainer}
+               showsVerticalScrollIndicator={false}>
+               {/* Title Section */}
+               <View style={[styles.formCard, {backgroundColor: cardColor}]}>
+                    <View style={styles.sectionHeader}>
+                         <View
+                              style={[
+                                   styles.iconBadge,
+                                   {backgroundColor: tintColor + "20"},
+                              ]}>
+                              <IconSymbol
+                                   name="text.alignleft"
+                                   size={16}
+                                   color={tintColor}
+                              />
+                         </View>
                          <ThemedText
                               type="defaultSemiBold"
                               style={styles.label}>
-                              Title *
+                              Task Title *
                          </ThemedText>
-                         <TextInput
-                              style={[
-                                   styles.input,
-                                   {
-                                        backgroundColor: inputBackground,
-                                        color: textColor,
-                                        borderColor,
-                                   },
-                              ]}
-                              value={title}
-                              onChangeText={setTitle}
-                              placeholder="Enter task title"
-                              placeholderTextColor={isDark ? "#666" : "#999"}
-                         />
                     </View>
+                    <TextInput
+                         style={[
+                              styles.input,
+                              {
+                                   backgroundColor: backgroundColor,
+                                   color: textColor,
+                                   borderColor,
+                              },
+                         ]}
+                         value={title}
+                         onChangeText={setTitle}
+                         placeholder="Enter task title"
+                         placeholderTextColor={isDark ? "#94A3B8" : "#9CA3AF"}
+                    />
+               </View>
 
-                    {/* Description */}
-                    <View style={styles.section}>
+               {/* Description Section */}
+               <View style={[styles.formCard, {backgroundColor: cardColor}]}>
+                    <View style={styles.sectionHeader}>
+                         <View
+                              style={[
+                                   styles.iconBadge,
+                                   {backgroundColor: tintColor + "20"},
+                              ]}>
+                              <IconSymbol
+                                   name="doc.text"
+                                   size={16}
+                                   color={tintColor}
+                              />
+                         </View>
                          <ThemedText
                               type="defaultSemiBold"
                               style={styles.label}>
                               Description
                          </ThemedText>
-                         <TextInput
-                              style={[
-                                   styles.textArea,
-                                   {
-                                        backgroundColor: inputBackground,
-                                        color: textColor,
-                                        borderColor,
-                                   },
-                              ]}
-                              value={description}
-                              onChangeText={setDescription}
-                              placeholder="Enter task description (optional)"
-                              placeholderTextColor={isDark ? "#666" : "#999"}
-                              multiline
-                              numberOfLines={4}
-                              textAlignVertical="top"
-                         />
                     </View>
+                    <TextInput
+                         style={[
+                              styles.textArea,
+                              {
+                                   backgroundColor: backgroundColor,
+                                   color: textColor,
+                                   borderColor,
+                              },
+                         ]}
+                         value={description}
+                         onChangeText={setDescription}
+                         placeholder="Add a description (optional)"
+                         placeholderTextColor={isDark ? "#94A3B8" : "#9CA3AF"}
+                         multiline
+                         numberOfLines={4}
+                         textAlignVertical="top"
+                    />
+               </View>
 
-                    {/* Category */}
-                    <View style={styles.section}>
+               {/* Category Section */}
+               <View style={[styles.formCard, {backgroundColor: cardColor}]}>
+                    <View style={styles.sectionHeader}>
+                         <View
+                              style={[
+                                   styles.iconBadge,
+                                   {backgroundColor: tintColor + "20"},
+                              ]}>
+                              <IconSymbol
+                                   name="folder"
+                                   size={16}
+                                   color={tintColor}
+                              />
+                         </View>
                          <ThemedText
                               type="defaultSemiBold"
                               style={styles.label}>
                               Category
                          </ThemedText>
-                         <View style={styles.optionsRow}>
-                              {categories.map((cat) => (
-                                   <TouchableOpacity
-                                        key={cat}
-                                        onPress={() => setCategory(cat)}
+                    </View>
+                    <View style={styles.optionsRow}>
+                         {categories.map((cat) => (
+                              <TouchableOpacity
+                                   key={cat}
+                                   onPress={() => setCategory(cat)}
+                                   activeOpacity={0.7}
+                                   style={[
+                                        styles.optionButton,
+                                        {
+                                             backgroundColor:
+                                                  category === cat
+                                                       ? tintColor
+                                                       : "transparent",
+                                             borderColor:
+                                                  category === cat
+                                                       ? tintColor
+                                                       : borderColor,
+                                        },
+                                   ]}>
+                                   {category === cat && (
+                                        <IconSymbol
+                                             name="checkmark"
+                                             size={14}
+                                             color="#FFFFFF"
+                                             style={styles.checkIcon}
+                                        />
+                                   )}
+                                   <ThemedText
                                         style={[
-                                             styles.optionButton,
+                                             styles.optionText,
                                              {
-                                                  backgroundColor:
+                                                  color:
                                                        category === cat
-                                                            ? Colors[
-                                                                   currentTheme
-                                                              ].tint
-                                                            : inputBackground,
-                                                  borderColor:
-                                                       category === cat
-                                                            ? Colors[
-                                                                   currentTheme
-                                                              ].tint
-                                                            : borderColor,
+                                                            ? "#FFFFFF"
+                                                            : textColor,
                                              },
                                         ]}>
-                                        <Text
-                                             style={[
-                                                  styles.optionText,
-                                                  {
-                                                       color:
-                                                            category === cat
-                                                                 ? "#FFFFFF"
-                                                                 : textColor,
-                                                  },
-                                             ]}>
-                                             {cat}
-                                        </Text>
-                                   </TouchableOpacity>
-                              ))}
-                         </View>
+                                        {cat}
+                                   </ThemedText>
+                              </TouchableOpacity>
+                         ))}
                     </View>
+               </View>
 
-                    {/* Priority */}
-                    <View style={styles.section}>
+               {/* Priority Section */}
+               <View style={[styles.formCard, {backgroundColor: cardColor}]}>
+                    <View style={styles.sectionHeader}>
+                         <View
+                              style={[
+                                   styles.iconBadge,
+                                   {backgroundColor: tintColor + "20"},
+                              ]}>
+                              <IconSymbol
+                                   name="flag"
+                                   size={16}
+                                   color={tintColor}
+                              />
+                         </View>
                          <ThemedText
                               type="defaultSemiBold"
                               style={styles.label}>
                               Priority
                          </ThemedText>
-                         <View style={styles.optionsRow}>
-                              {priorities.map((pri) => (
-                                   <TouchableOpacity
-                                        key={pri}
-                                        onPress={() => setPriority(pri)}
-                                        style={[
-                                             styles.optionButton,
-                                             {
-                                                  backgroundColor:
-                                                       priority === pri
-                                                            ? Colors[
-                                                                   currentTheme
-                                                              ].tint
-                                                            : inputBackground,
-                                                  borderColor:
-                                                       priority === pri
-                                                            ? Colors[
-                                                                   currentTheme
-                                                              ].tint
-                                                            : borderColor,
-                                             },
-                                        ]}>
-                                        <PriorityBadge priority={pri} />
-                                   </TouchableOpacity>
-                              ))}
-                         </View>
                     </View>
+                    <View style={styles.optionsRow}>
+                         {priorities.map((pri) => (
+                              <TouchableOpacity
+                                   key={pri}
+                                   onPress={() => setPriority(pri)}
+                                   activeOpacity={0.7}
+                                   style={[
+                                        styles.priorityButton,
+                                        {
+                                             backgroundColor:
+                                                  priority === pri
+                                                       ? tintColor
+                                                       : "transparent",
+                                             borderColor:
+                                                  priority === pri
+                                                       ? tintColor
+                                                       : borderColor,
+                                        },
+                                   ]}>
+                                   {priority === pri && (
+                                        <IconSymbol
+                                             name="checkmark"
+                                             size={12}
+                                             color="#FFFFFF"
+                                             style={styles.checkIcon}
+                                        />
+                                   )}
+                                   <PriorityBadge priority={pri} />
+                              </TouchableOpacity>
+                         ))}
+                    </View>
+               </View>
 
-                    {/* Due Date */}
-                    <View style={styles.section}>
+               {/* Due Date Section */}
+               <View style={[styles.formCard, {backgroundColor: cardColor}]}>
+                    <View style={styles.sectionHeader}>
+                         <View
+                              style={[
+                                   styles.iconBadge,
+                                   {backgroundColor: tintColor + "20"},
+                              ]}>
+                              <IconSymbol
+                                   name="calendar"
+                                   size={16}
+                                   color={tintColor}
+                              />
+                         </View>
                          <ThemedText
                               type="defaultSemiBold"
                               style={styles.label}>
                               Due Date
                          </ThemedText>
-                         <TouchableOpacity
-                              onPress={() => setShowDatePicker(true)}
+                    </View>
+                    <TouchableOpacity
+                         onPress={() => setShowDatePicker(true)}
+                         activeOpacity={0.7}
+                         style={[
+                              styles.dateButton,
+                              {
+                                   backgroundColor: backgroundColor,
+                                   borderColor,
+                              },
+                         ]}>
+                         <IconSymbol
+                              name="calendar"
+                              size={18}
+                              color={
+                                   dueDate
+                                        ? tintColor
+                                        : isDark
+                                        ? "#64748B"
+                                        : "#9CA3AF"
+                              }
+                         />
+                         <ThemedText
                               style={[
-                                   styles.dateButton,
+                                   styles.dateText,
                                    {
-                                        backgroundColor: inputBackground,
-                                        borderColor,
-                                   },
-                              ]}>
-                              <IconSymbol
-                                   name="calendar"
-                                   size={20}
-                                   color={
-                                        dueDate
+                                        color: dueDate
                                              ? textColor
                                              : isDark
-                                             ? "#666"
-                                             : "#999"
-                                   }
-                              />
-                              <Text
-                                   style={[
-                                        styles.dateText,
-                                        {
-                                             color: dueDate
-                                                  ? textColor
-                                                  : isDark
-                                                  ? "#666"
-                                                  : "#999",
-                                        },
-                                   ]}>
-                                   {dueDate
-                                        ? dueDate.toLocaleDateString("en-US", {
-                                               year: "numeric",
-                                               month: "short",
-                                               day: "numeric",
-                                          })
-                                        : "Select due date (optional)"}
-                              </Text>
-                              {dueDate && (
-                                   <TouchableOpacity
-                                        onPress={(e) => {
-                                             e.stopPropagation();
-                                             setDueDate(null);
-                                        }}
-                                        style={styles.clearButton}>
-                                        <IconSymbol
-                                             name="xmark.circle.fill"
-                                             size={20}
-                                             color={textColor}
-                                        />
-                                   </TouchableOpacity>
-                              )}
-                         </TouchableOpacity>
-
-                         {showDatePicker && (
-                              <DateTimePicker
-                                   value={dueDate || new Date()}
-                                   mode="date"
-                                   display={
-                                        Platform.OS === "ios"
-                                             ? "spinner"
-                                             : "default"
-                                   }
-                                   onChange={(event, selectedDate) => {
-                                        setShowDatePicker(
-                                             Platform.OS === "ios"
-                                        );
-                                        if (selectedDate) {
-                                             setDueDate(selectedDate);
-                                        }
-                                   }}
-                                   minimumDate={new Date()}
-                              />
-                         )}
-                    </View>
-
-                    {/* Submit Button */}
-                    <TouchableOpacity
-                         onPress={handleSubmit}
-                         style={[
-                              styles.submitButton,
-                              {
-                                   backgroundColor: title.trim()
-                                        ? Colors[currentTheme].tint
-                                        : borderColor,
-                              },
-                         ]}
-                         disabled={!title.trim()}>
-                         <ThemedText style={styles.submitText}>
-                              {submitLabel}
+                                             ? "#94A3B8"
+                                             : "#9CA3AF",
+                                   },
+                              ]}>
+                              {dueDate
+                                   ? dueDate.toLocaleDateString("en-US", {
+                                          weekday: "short",
+                                          year: "numeric",
+                                          month: "short",
+                                          day: "numeric",
+                                     })
+                                   : "Select due date (optional)"}
                          </ThemedText>
+                         {dueDate && (
+                              <TouchableOpacity
+                                   onPress={(e) => {
+                                        e.stopPropagation();
+                                        setDueDate(null);
+                                   }}
+                                   style={styles.clearButton}
+                                   activeOpacity={0.7}>
+                                   <IconSymbol
+                                        name="xmark.circle.fill"
+                                        size={18}
+                                        color={isDark ? "#CBD5E1" : "#6B7280"}
+                                   />
+                              </TouchableOpacity>
+                         )}
                     </TouchableOpacity>
-               </ThemedView>
+
+                    {showDatePicker && (
+                         <DateTimePicker
+                              value={dueDate || new Date()}
+                              mode="date"
+                              display={
+                                   Platform.OS === "ios" ? "spinner" : "default"
+                              }
+                              onChange={(event, selectedDate) => {
+                                   setShowDatePicker(Platform.OS === "ios");
+                                   if (selectedDate) {
+                                        setDueDate(selectedDate);
+                                   }
+                              }}
+                              minimumDate={new Date()}
+                         />
+                    )}
+               </View>
+
+               {/* Submit Button */}
+               <TouchableOpacity
+                    onPress={handleSubmit}
+                    activeOpacity={0.8}
+                    style={[
+                         styles.submitButton,
+                         {
+                              backgroundColor: title.trim()
+                                   ? tintColor
+                                   : borderColor,
+                              shadowColor: title.trim()
+                                   ? tintColor
+                                   : "transparent",
+                         },
+                    ]}
+                    disabled={!title.trim()}>
+                    <IconSymbol
+                         name="checkmark.circle.fill"
+                         size={20}
+                         color="#FFFFFF"
+                         style={styles.submitIcon}
+                    />
+                    <ThemedText style={styles.submitText}>
+                         {submitLabel}
+                    </ThemedText>
+               </TouchableOpacity>
           </ScrollView>
      );
 };
@@ -325,73 +410,123 @@ const styles = StyleSheet.create({
      container: {
           flex: 1,
      },
-     form: {
-          padding: 16,
+     contentContainer: {
+          padding: 20,
+          paddingBottom: 40,
      },
-     section: {
-          marginBottom: 24,
+     formCard: {
+          borderRadius: 16,
+          padding: 16,
+          marginBottom: 16,
+          borderWidth: 1,
+          borderColor: "transparent",
+     },
+     sectionHeader: {
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 12,
+          gap: 10,
+     },
+     iconBadge: {
+          width: 28,
+          height: 28,
+          borderRadius: 14,
+          justifyContent: "center",
+          alignItems: "center",
      },
      label: {
-          marginBottom: 8,
           fontSize: 14,
+          fontWeight: "700",
+          letterSpacing: 0.2,
+          // Color will be set by ThemedText component
      },
      input: {
-          height: 48,
-          borderWidth: 1,
-          borderRadius: 8,
-          paddingHorizontal: 12,
+          height: 50,
+          borderWidth: 1.5,
+          borderRadius: 12,
+          paddingHorizontal: 16,
           fontSize: 16,
+          fontWeight: "500",
      },
      textArea: {
-          minHeight: 100,
-          borderWidth: 1,
-          borderRadius: 8,
-          paddingHorizontal: 12,
-          paddingVertical: 12,
+          minHeight: 110,
+          borderWidth: 1.5,
+          borderRadius: 12,
+          paddingHorizontal: 16,
+          paddingVertical: 14,
           fontSize: 16,
+          fontWeight: "400",
      },
      optionsRow: {
           flexDirection: "row",
-          gap: 8,
+          gap: 10,
           flexWrap: "wrap",
      },
      optionButton: {
+          flexDirection: "row",
+          alignItems: "center",
           paddingHorizontal: 16,
           paddingVertical: 10,
-          borderRadius: 8,
-          borderWidth: 1,
+          borderRadius: 20,
+          borderWidth: 1.5,
+          minHeight: 38,
+          gap: 6,
+     },
+     checkIcon: {
+          marginRight: 2,
      },
      optionText: {
           fontSize: 14,
-          fontWeight: "500",
+          fontWeight: "600",
+          letterSpacing: 0.2,
+     },
+     priorityButton: {
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 14,
+          paddingVertical: 9,
+          borderRadius: 18,
+          borderWidth: 1.5,
+          minHeight: 36,
+          gap: 6,
      },
      dateButton: {
           flexDirection: "row",
           alignItems: "center",
-          height: 48,
-          borderWidth: 1,
-          borderRadius: 8,
-          paddingHorizontal: 12,
-          gap: 8,
+          height: 50,
+          borderWidth: 1.5,
+          borderRadius: 12,
+          paddingHorizontal: 16,
+          gap: 12,
      },
      dateText: {
           flex: 1,
           fontSize: 16,
+          fontWeight: "500",
      },
      clearButton: {
           padding: 4,
      },
      submitButton: {
-          height: 52,
-          borderRadius: 8,
-          justifyContent: "center",
+          flexDirection: "row",
           alignItems: "center",
+          justifyContent: "center",
+          height: 56,
+          borderRadius: 16,
           marginTop: 8,
-          marginBottom: 32,
+          gap: 8,
+          shadowOffset: {width: 0, height: 4},
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 6,
+     },
+     submitIcon: {
+          marginRight: 2,
      },
      submitText: {
           color: "#FFFFFF",
-          fontSize: 16,
-          fontWeight: "600",
+          fontSize: 17,
+          fontWeight: "700",
+          letterSpacing: 0.3,
      },
 });

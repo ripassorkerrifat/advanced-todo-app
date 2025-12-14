@@ -344,7 +344,7 @@ export default function TaskListScreen() {
                                         styles.fixedSubtitle,
                                         {opacity: 0.6},
                                    ]}>
-                                   {tasks.length} total
+                                   {tasks.length} tasks
                               </ThemedText>
                          </View>
                          <TouchableOpacity

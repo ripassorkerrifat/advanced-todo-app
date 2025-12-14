@@ -10,7 +10,6 @@ import {useTheme} from "@/store/ThemeContext";
 import React, {useEffect, useState} from "react";
 import {
      Alert,
-     Platform,
      ScrollView,
      StyleSheet,
      TextInput,
@@ -32,6 +31,9 @@ export default function ProfileScreen() {
                setName(profile.name);
                setEmail(profile.email);
                setPhone(profile.phone);
+          } else {
+               // If no profile exists, allow editing immediately
+               setIsEditing(true);
           }
      }, [profile]);
 
@@ -60,203 +62,291 @@ export default function ProfileScreen() {
           }
      };
 
-     const backgroundColor =
-          currentTheme === "dark"
-               ? Colors.dark.background
-               : Colors.light.background;
-     const textColor =
-          currentTheme === "dark" ? Colors.dark.text : Colors.light.text;
-     const cardColor =
-          currentTheme === "dark" ? Colors.dark.card : Colors.light.card;
-     const borderColor =
-          currentTheme === "dark" ? Colors.dark.border : Colors.light.border;
-     const inputBackground = currentTheme === "dark" ? "#1E293B" : "#F9FAFB";
+     const handleCancel = () => {
+          setIsEditing(false);
+          if (profile) {
+               setName(profile.name);
+               setEmail(profile.email);
+               setPhone(profile.phone);
+          } else {
+               setName("");
+               setEmail("");
+               setPhone("");
+          }
+     };
+
+     const backgroundColor = Colors[currentTheme].background;
+     const textColor = Colors[currentTheme].text;
+     const cardColor = Colors[currentTheme].card;
+     const borderColor = Colors[currentTheme].border;
+     const tintColor = Colors[currentTheme].tint;
+
+     const initials = name
+          ? name
+                 .split(" ")
+                 .map((n) => n[0])
+                 .join("")
+                 .toUpperCase()
+                 .slice(0, 2)
+          : "U";
 
      return (
           <SafeAreaView
                style={[styles.container, {backgroundColor}]}
                edges={["top"]}>
-               <ScrollView
-                    style={styles.scrollView}
-                    contentContainerStyle={styles.content}>
-                    {/* Header */}
-                    <View style={styles.header}>
+               {/* Fixed Header */}
+               <View
+                    style={[
+                         styles.header,
+                         {
+                              backgroundColor: backgroundColor,
+                              borderBottomColor: borderColor,
+                         },
+                    ]}>
+                    <View style={styles.titleSection}>
                          <ThemedText type="title" style={styles.title}>
                               Profile
                          </ThemedText>
-                         {!isEditing && (
-                              <TouchableOpacity
-                                   onPress={() => setIsEditing(true)}
+                         <ThemedText
+                              type="default"
+                              style={[styles.subtitle, {opacity: 0.6}]}>
+                              Manage your information
+                         </ThemedText>
+                    </View>
+                    {!isEditing && profile && (
+                         <TouchableOpacity
+                              onPress={() => setIsEditing(true)}
+                              style={[
+                                   styles.editButton,
+                                   {backgroundColor: tintColor + "20"},
+                              ]}
+                              activeOpacity={0.7}>
+                              <IconSymbol
+                                   name="pencil"
+                                   size={16}
+                                   color={tintColor}
+                              />
+                         </TouchableOpacity>
+                    )}
+               </View>
+
+               <ScrollView
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.content}
+                    showsVerticalScrollIndicator={false}>
+                    {/* Avatar Section */}
+                    <View
+                         style={[
+                              styles.avatarCard,
+                              {backgroundColor: cardColor},
+                         ]}>
+                         <View
+                              style={[
+                                   styles.avatarContainer,
+                                   {
+                                        backgroundColor: tintColor + "20",
+                                   },
+                              ]}>
+                              <View
                                    style={[
-                                        styles.editButton,
+                                        styles.avatar,
+                                        {backgroundColor: tintColor},
+                                   ]}>
+                                   <ThemedText style={styles.avatarText}>
+                                        {initials}
+                                   </ThemedText>
+                              </View>
+                         </View>
+                         <ThemedText
+                              type="defaultSemiBold"
+                              style={styles.avatarName}>
+                              {name || "Your Name"}
+                         </ThemedText>
+                         <ThemedText
+                              type="default"
+                              style={[styles.avatarEmail, {opacity: 0.6}]}>
+                              {email || "your.email@example.com"}
+                         </ThemedText>
+                    </View>
+
+                    {/* Name Section */}
+                    <View
+                         style={[
+                              styles.formCard,
+                              {backgroundColor: cardColor},
+                         ]}>
+                         <View style={styles.sectionHeader}>
+                              <View
+                                   style={[
+                                        styles.iconBadge,
+                                        {backgroundColor: tintColor + "20"},
+                                   ]}>
+                                   <IconSymbol
+                                        name="person.fill"
+                                        size={16}
+                                        color={tintColor}
+                                   />
+                              </View>
+                              <ThemedText
+                                   type="defaultSemiBold"
+                                   style={styles.label}>
+                                   Full Name
+                              </ThemedText>
+                         </View>
+                         <TextInput
+                              style={[
+                                   styles.input,
+                                   {
+                                        backgroundColor: backgroundColor,
+                                        color: textColor,
+                                        borderColor,
+                                   },
+                              ]}
+                              value={name}
+                              onChangeText={setName}
+                              placeholder="Enter your full name"
+                              placeholderTextColor={
+                                   currentTheme === "dark"
+                                        ? "#94A3B8"
+                                        : "#9CA3AF"
+                              }
+                              editable={isEditing}
+                         />
+                    </View>
+
+                    {/* Email Section */}
+                    <View
+                         style={[
+                              styles.formCard,
+                              {backgroundColor: cardColor},
+                         ]}>
+                         <View style={styles.sectionHeader}>
+                              <View
+                                   style={[
+                                        styles.iconBadge,
+                                        {backgroundColor: tintColor + "20"},
+                                   ]}>
+                                   <IconSymbol
+                                        name="envelope"
+                                        size={16}
+                                        color={tintColor}
+                                   />
+                              </View>
+                              <ThemedText
+                                   type="defaultSemiBold"
+                                   style={styles.label}>
+                                   Email Address
+                              </ThemedText>
+                         </View>
+                         <TextInput
+                              style={[
+                                   styles.input,
+                                   {
+                                        backgroundColor: backgroundColor,
+                                        color: textColor,
+                                        borderColor,
+                                   },
+                              ]}
+                              value={email}
+                              onChangeText={setEmail}
+                              placeholder="Enter your email"
+                              placeholderTextColor={
+                                   currentTheme === "dark"
+                                        ? "#94A3B8"
+                                        : "#9CA3AF"
+                              }
+                              keyboardType="email-address"
+                              autoCapitalize="none"
+                              editable={isEditing}
+                         />
+                    </View>
+
+                    {/* Phone Section */}
+                    <View
+                         style={[
+                              styles.formCard,
+                              {backgroundColor: cardColor},
+                         ]}>
+                         <View style={styles.sectionHeader}>
+                              <View
+                                   style={[
+                                        styles.iconBadge,
+                                        {backgroundColor: tintColor + "20"},
+                                   ]}>
+                                   <IconSymbol
+                                        name="phone"
+                                        size={16}
+                                        color={tintColor}
+                                   />
+                              </View>
+                              <ThemedText
+                                   type="defaultSemiBold"
+                                   style={styles.label}>
+                                   Phone Number
+                              </ThemedText>
+                         </View>
+                         <TextInput
+                              style={[
+                                   styles.input,
+                                   {
+                                        backgroundColor: backgroundColor,
+                                        color: textColor,
+                                        borderColor,
+                                   },
+                              ]}
+                              value={phone}
+                              onChangeText={setPhone}
+                              placeholder="Enter your phone number"
+                              placeholderTextColor={
+                                   currentTheme === "dark"
+                                        ? "#94A3B8"
+                                        : "#9CA3AF"
+                              }
+                              keyboardType="phone-pad"
+                              editable={isEditing}
+                         />
+                    </View>
+
+                    {/* Action Buttons */}
+                    {isEditing && (
+                         <View style={styles.actions}>
+                              <TouchableOpacity
+                                   onPress={handleCancel}
+                                   activeOpacity={0.7}
+                                   style={[
+                                        styles.cancelButton,
                                         {
-                                             backgroundColor:
-                                                  Colors[currentTheme].primary,
+                                             backgroundColor: "transparent",
+                                             borderColor,
+                                        },
+                                   ]}>
+                                   <ThemedText
+                                        style={[styles.cancelButtonText]}>
+                                        Cancel
+                                   </ThemedText>
+                              </TouchableOpacity>
+                              <TouchableOpacity
+                                   onPress={handleSave}
+                                   activeOpacity={0.8}
+                                   style={[
+                                        styles.saveButton,
+                                        {
+                                             backgroundColor: tintColor,
+                                             shadowColor: tintColor,
                                         },
                                    ]}>
                                    <IconSymbol
-                                        name="pencil"
-                                        size={20}
+                                        name="checkmark.circle.fill"
+                                        size={18}
                                         color="#FFFFFF"
+                                        style={styles.saveIcon}
                                    />
-                                   <ThemedText style={styles.editButtonText}>
-                                        Edit
+                                   <ThemedText style={styles.saveButtonText}>
+                                        Save Changes
                                    </ThemedText>
                               </TouchableOpacity>
-                         )}
-                    </View>
-
-                    {/* Profile Card */}
-                    <View style={[styles.card, {backgroundColor: cardColor}]}>
-                         {/* Avatar */}
-                         <View
-                              style={[
-                                   styles.avatar,
-                                   {
-                                        backgroundColor:
-                                             Colors[currentTheme].primary,
-                                   },
-                              ]}>
-                              <ThemedText style={styles.avatarText}>
-                                   {name
-                                        ? name
-                                               .split(" ")
-                                               .map((n) => n[0])
-                                               .join("")
-                                               .toUpperCase()
-                                               .slice(0, 2)
-                                        : "U"}
-                              </ThemedText>
                          </View>
-
-                         {/* Form Fields */}
-                         <View style={styles.form}>
-                              <View style={styles.field}>
-                                   <ThemedText
-                                        type="defaultSemiBold"
-                                        style={styles.label}>
-                                        Name
-                                   </ThemedText>
-                                   <TextInput
-                                        style={[
-                                             styles.input,
-                                             {
-                                                  backgroundColor:
-                                                       inputBackground,
-                                                  color: textColor,
-                                                  borderColor: borderColor,
-                                             },
-                                        ]}
-                                        value={name}
-                                        onChangeText={setName}
-                                        placeholder="Enter your name"
-                                        placeholderTextColor={
-                                             currentTheme === "dark"
-                                                  ? "#64748B"
-                                                  : "#9CA3AF"
-                                        }
-                                        editable={isEditing}
-                                   />
-                              </View>
-
-                              <View style={styles.field}>
-                                   <ThemedText
-                                        type="defaultSemiBold"
-                                        style={styles.label}>
-                                        Email
-                                   </ThemedText>
-                                   <TextInput
-                                        style={[
-                                             styles.input,
-                                             {
-                                                  backgroundColor:
-                                                       inputBackground,
-                                                  color: textColor,
-                                                  borderColor: borderColor,
-                                             },
-                                        ]}
-                                        value={email}
-                                        onChangeText={setEmail}
-                                        placeholder="Enter your email"
-                                        placeholderTextColor={
-                                             currentTheme === "dark"
-                                                  ? "#64748B"
-                                                  : "#9CA3AF"
-                                        }
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                        editable={isEditing}
-                                   />
-                              </View>
-
-                              <View style={styles.field}>
-                                   <ThemedText
-                                        type="defaultSemiBold"
-                                        style={styles.label}>
-                                        Phone
-                                   </ThemedText>
-                                   <TextInput
-                                        style={[
-                                             styles.input,
-                                             {
-                                                  backgroundColor:
-                                                       inputBackground,
-                                                  color: textColor,
-                                                  borderColor: borderColor,
-                                             },
-                                        ]}
-                                        value={phone}
-                                        onChangeText={setPhone}
-                                        placeholder="Enter your phone"
-                                        placeholderTextColor={
-                                             currentTheme === "dark"
-                                                  ? "#64748B"
-                                                  : "#9CA3AF"
-                                        }
-                                        keyboardType="phone-pad"
-                                        editable={isEditing}
-                                   />
-                              </View>
-
-                              {isEditing && (
-                                   <View style={styles.actions}>
-                                        <TouchableOpacity
-                                             onPress={() => {
-                                                  setIsEditing(false);
-                                                  if (profile) {
-                                                       setName(profile.name);
-                                                       setEmail(profile.email);
-                                                       setPhone(profile.phone);
-                                                  }
-                                             }}
-                                             style={[
-                                                  styles.cancelButton,
-                                                  {borderColor: borderColor},
-                                             ]}>
-                                             <ThemedText
-                                                  style={{color: textColor}}>
-                                                  Cancel
-                                             </ThemedText>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                             onPress={handleSave}
-                                             style={[
-                                                  styles.saveButton,
-                                                  {
-                                                       backgroundColor:
-                                                            Colors[currentTheme]
-                                                                 .primary,
-                                                  },
-                                             ]}>
-                                             <ThemedText
-                                                  style={styles.saveButtonText}>
-                                                  Save
-                                             </ThemedText>
-                                        </TouchableOpacity>
-                                   </View>
-                              )}
-                         </View>
-                    </View>
+                    )}
                </ScrollView>
           </SafeAreaView>
      );
@@ -266,40 +356,54 @@ const styles = StyleSheet.create({
      container: {
           flex: 1,
      },
+     header: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+          borderBottomWidth: 1,
+     },
+     titleSection: {
+          flex: 1,
+     },
+     title: {
+          fontSize: 24,
+          fontWeight: "700",
+          marginBottom: 2,
+     },
+     subtitle: {
+          fontSize: 13,
+     },
+     editButton: {
+          width: 36,
+          height: 36,
+          borderRadius: 18,
+          justifyContent: "center",
+          alignItems: "center",
+     },
      scrollView: {
           flex: 1,
      },
      content: {
-          padding: 16,
+          padding: 20,
+          paddingBottom: 40,
      },
-     header: {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 24,
-          paddingTop: Platform.OS === "ios" ? 0 : 20,
-     },
-     title: {
-          fontSize: 32,
-          fontWeight: "700",
-     },
-     editButton: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 6,
-          paddingHorizontal: 16,
-          paddingVertical: 8,
-          borderRadius: 20,
-     },
-     editButtonText: {
-          color: "#FFFFFF",
-          fontSize: 14,
-          fontWeight: "600",
-     },
-     card: {
+     avatarCard: {
           borderRadius: 16,
           padding: 24,
           alignItems: "center",
+          marginBottom: 20,
+          borderWidth: 1,
+          borderColor: "transparent",
+     },
+     avatarContainer: {
+          width: 120,
+          height: 120,
+          borderRadius: 60,
+          justifyContent: "center",
+          alignItems: "center",
+          marginBottom: 16,
      },
      avatar: {
           width: 100,
@@ -307,30 +411,52 @@ const styles = StyleSheet.create({
           borderRadius: 50,
           justifyContent: "center",
           alignItems: "center",
-          marginBottom: 24,
      },
      avatarText: {
-          fontSize: 36,
-          fontWeight: "700",
+          fontSize: 40,
+          fontWeight: "800",
           color: "#FFFFFF",
      },
-     form: {
-          width: "100%",
-          gap: 20,
+     avatarName: {
+          fontSize: 20,
+          fontWeight: "700",
+          marginBottom: 4,
      },
-     field: {
-          gap: 8,
+     avatarEmail: {
+          fontSize: 14,
+     },
+     formCard: {
+          borderRadius: 16,
+          padding: 16,
+          marginBottom: 16,
+          borderWidth: 1,
+          borderColor: "transparent",
+     },
+     sectionHeader: {
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 12,
+          gap: 10,
+     },
+     iconBadge: {
+          width: 28,
+          height: 28,
+          borderRadius: 14,
+          justifyContent: "center",
+          alignItems: "center",
      },
      label: {
           fontSize: 14,
-          marginBottom: 4,
+          fontWeight: "700",
+          letterSpacing: 0.2,
      },
      input: {
-          height: 52,
-          borderWidth: 1,
+          height: 50,
+          borderWidth: 1.5,
           borderRadius: 12,
           paddingHorizontal: 16,
           fontSize: 16,
+          fontWeight: "500",
      },
      actions: {
           flexDirection: "row",
@@ -339,22 +465,36 @@ const styles = StyleSheet.create({
      },
      cancelButton: {
           flex: 1,
-          height: 52,
-          borderWidth: 1,
-          borderRadius: 12,
+          height: 56,
+          borderWidth: 1.5,
+          borderRadius: 16,
           justifyContent: "center",
           alignItems: "center",
+     },
+     cancelButtonText: {
+          fontSize: 16,
+          fontWeight: "600",
      },
      saveButton: {
           flex: 1,
-          height: 52,
-          borderRadius: 12,
-          justifyContent: "center",
+          flexDirection: "row",
           alignItems: "center",
+          justifyContent: "center",
+          height: 56,
+          borderRadius: 16,
+          gap: 8,
+          shadowOffset: {width: 0, height: 4},
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 6,
+     },
+     saveIcon: {
+          marginRight: 2,
      },
      saveButtonText: {
           color: "#FFFFFF",
-          fontSize: 16,
-          fontWeight: "600",
+          fontSize: 17,
+          fontWeight: "700",
+          letterSpacing: 0.3,
      },
 });
