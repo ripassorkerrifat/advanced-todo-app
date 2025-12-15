@@ -17,6 +17,7 @@ import Reanimated, {
      withSpring,
 } from "react-native-reanimated";
 import {CategoryIndicator} from "./CategoryIndicator";
+import {HighlightedText} from "./HighlightedText";
 import {PriorityBadge} from "./PriorityBadge";
 
 interface TaskItemProps {
@@ -24,15 +25,24 @@ interface TaskItemProps {
      onPress: () => void;
      onToggleComplete: () => void;
      onDelete: () => void;
+     searchQuery?: string;
+     onLongPress?: () => void;
+     isSelected?: boolean;
+     onSelect?: () => void;
 }
 
-const SWIPE_THRESHOLD = -100;
+const SWIPE_THRESHOLD = 100; // For complete (swipe right)
+const DELETE_THRESHOLD = -100; // For delete (swipe left)
 
 export const TaskItem: React.FC<TaskItemProps> = ({
      task,
      onPress,
      onToggleComplete,
      onDelete,
+     searchQuery = "",
+     onLongPress,
+     isSelected = false,
+     onSelect,
 }) => {
      const {currentTheme} = useTheme();
      const isDark = currentTheme === "dark";
@@ -45,27 +55,41 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           : Colors.light.background;
      const textColor = isDark ? Colors.dark.text : Colors.light.text;
      const borderColor = isDark ? Colors.dark.border : Colors.light.border;
+     const tintColor = Colors[currentTheme].tint;
 
      const panGesture = Gesture.Pan()
           .activeOffsetX([-10, 10]) // Only activate on horizontal movement
           .failOffsetY([-10, 10]) // Fail if vertical movement is detected first
           .onUpdate((e) => {
-               // Only allow swipe if horizontal movement is greater than vertical
-               if (
-                    Math.abs(e.translationX) > Math.abs(e.translationY) &&
-                    e.translationX < 0
-               ) {
+               // Allow swipe in both directions
+               if (Math.abs(e.translationX) > Math.abs(e.translationY)) {
                     translateX.value = e.translationX;
                }
           })
           .onEnd((e) => {
-               if (e.translationX < SWIPE_THRESHOLD) {
+               if (e.translationX > SWIPE_THRESHOLD) {
+                    // Swipe right to complete
+                    translateX.value = withSpring(0, {}, () => {
+                         if (!task.completed) {
+                              runOnJS(onToggleComplete)();
+                         }
+                    });
+               } else if (e.translationX < DELETE_THRESHOLD) {
+                    // Swipe left to delete
                     translateX.value = withSpring(-200, {}, () => {
                          runOnJS(setIsDeleting)(true);
                          runOnJS(onDelete)();
                     });
                } else {
                     translateX.value = withSpring(0);
+               }
+          });
+
+     const longPressGesture = Gesture.LongPress()
+          .minDuration(500)
+          .onStart(() => {
+               if (onLongPress) {
+                    runOnJS(onLongPress)();
                }
           });
 
@@ -82,21 +106,62 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           };
      });
 
+     const completeButtonStyle = useAnimatedStyle(() => {
+          const opacity = translateX.value > 50 ? 1 : 0;
+          return {
+               opacity: withSpring(opacity),
+          };
+     });
+
      if (isDeleting) {
           return null;
      }
 
+     const composedGesture = Gesture.Simultaneous(panGesture, longPressGesture);
+
      return (
           <View style={styles.container}>
+               {/* Complete Button (Left side) */}
+               <Reanimated.View
+                    style={[styles.completeButton, completeButtonStyle]}>
+                    <IconSymbol
+                         name="checkmark.circle.fill"
+                         size={24}
+                         color="#FFFFFF"
+                    />
+               </Reanimated.View>
+
+               {/* Delete Button (Right side) */}
                <Reanimated.View
                     style={[styles.deleteButton, deleteButtonStyle]}>
                     <IconSymbol name="trash.fill" size={24} color="#FFFFFF" />
                </Reanimated.View>
 
-               <GestureDetector gesture={panGesture}>
+               <GestureDetector gesture={composedGesture}>
                     <Reanimated.View
-                         style={[styles.taskContainer, animatedStyle]}>
+                         style={[
+                              styles.taskContainer,
+                              animatedStyle,
+                              isSelected && {
+                                   borderWidth: 2,
+                                   borderColor: tintColor,
+                              },
+                         ]}>
                          <CategoryIndicator category={task.category} />
+
+                         {isSelected && (
+                              <View
+                                   style={[
+                                        styles.selectIndicator,
+                                        {backgroundColor: tintColor},
+                                   ]}>
+                                   <IconSymbol
+                                        name="checkmark"
+                                        size={16}
+                                        color="#FFFFFF"
+                                   />
+                              </View>
+                         )}
 
                          <TouchableOpacity
                               style={[
@@ -107,7 +172,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                                    },
                                    task.completed && styles.completed,
                               ]}
-                              onPress={onPress}
+                              onPress={
+                                   isSelected && onSelect ? onSelect : onPress
+                              }
                               activeOpacity={0.7}>
                               <View style={styles.header}>
                                    <TouchableOpacity
@@ -144,18 +211,21 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                                    </TouchableOpacity>
 
                                    <View style={styles.titleContainer}>
-                                        <Text
+                                        <HighlightedText
+                                             text={task.title}
+                                             query={searchQuery}
                                              style={[
                                                   styles.title,
                                                   {color: textColor},
                                                   task.completed &&
                                                        styles.completedText,
                                              ]}
-                                             numberOfLines={1}>
-                                             {task.title}
-                                        </Text>
+                                             numberOfLines={1}
+                                        />
                                         {task.description && (
-                                             <Text
+                                             <HighlightedText
+                                                  text={task.description}
+                                                  query={searchQuery}
                                                   style={[
                                                        styles.description,
                                                        {
@@ -163,9 +233,28 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                                                             opacity: 0.6,
                                                        },
                                                   ]}
-                                                  numberOfLines={2}>
-                                                  {task.description}
-                                             </Text>
+                                                  numberOfLines={2}
+                                             />
+                                        )}
+                                        {task.notes && (
+                                             <View
+                                                  style={styles.notesIndicator}>
+                                                  <IconSymbol
+                                                       name="doc.text"
+                                                       size={12}
+                                                       color={textColor}
+                                                  />
+                                                  <Text
+                                                       style={[
+                                                            styles.notesText,
+                                                            {
+                                                                 color: textColor,
+                                                                 opacity: 0.5,
+                                                            },
+                                                       ]}>
+                                                       Has notes
+                                                  </Text>
+                                             </View>
                                         )}
                                    </View>
                               </View>
@@ -220,6 +309,17 @@ const styles = StyleSheet.create({
      taskContainer: {
           flexDirection: "row",
      },
+     completeButton: {
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 80,
+          backgroundColor: "#10B981",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 1,
+     },
      deleteButton: {
           position: "absolute",
           right: 0,
@@ -229,7 +329,16 @@ const styles = StyleSheet.create({
           backgroundColor: "#EF4444",
           justifyContent: "center",
           alignItems: "center",
-          zIndex: 0,
+          zIndex: 1,
+     },
+     selectIndicator: {
+          width: 24,
+          height: 24,
+          borderRadius: 12,
+          justifyContent: "center",
+          alignItems: "center",
+          marginRight: 12,
+          alignSelf: "center",
      },
      content: {
           flex: 1,
@@ -269,6 +378,16 @@ const styles = StyleSheet.create({
      description: {
           fontSize: 14,
           lineHeight: 20,
+     },
+     notesIndicator: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 4,
+          marginTop: 6,
+     },
+     notesText: {
+          fontSize: 11,
+          fontWeight: "500",
      },
      completedText: {
           textDecorationLine: "line-through",

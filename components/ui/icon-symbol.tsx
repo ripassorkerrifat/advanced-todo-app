@@ -41,6 +41,12 @@ const MAPPING = {
      folder: "folder",
      flag: "flag",
      "chart.bar": "bar-chart",
+     magnifyingglass: "search",
+     "chevron.down": "keyboard-arrow-down",
+     "chevron.up": "keyboard-arrow-up",
+     "mic.fill": "mic",
+     "arrow.clockwise": "refresh",
+     "info.circle": "info",
 } as IconMapping;
 
 /**

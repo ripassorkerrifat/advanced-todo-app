@@ -37,6 +37,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
      const [description, setDescription] = useState(
           initialData?.description || ""
      );
+     const [notes, setNotes] = useState(initialData?.notes || "");
      const [category, setCategory] = useState<TaskCategory>(
           initialData?.category || TaskCategory.PERSONAL
      );
@@ -47,6 +48,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           initialData?.dueDate ? new Date(initialData.dueDate) : null
      );
      const [showDatePicker, setShowDatePicker] = useState(false);
+     const [isNotesExpanded, setIsNotesExpanded] = useState(false);
 
      const backgroundColor = isDark
           ? Colors.dark.background
@@ -62,6 +64,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           onSubmit({
                title: title.trim(),
                description: description.trim() || undefined,
+               notes: notes.trim() || undefined,
                category,
                priority,
                dueDate: dueDate?.toISOString(),
@@ -161,6 +164,88 @@ export const TaskForm: React.FC<TaskFormProps> = ({
                          numberOfLines={4}
                          textAlignVertical="top"
                     />
+               </View>
+
+               {/* Notes Section */}
+               <View style={[styles.formCard, {backgroundColor: cardColor}]}>
+                    <View style={styles.sectionHeader}>
+                         <View
+                              style={[
+                                   styles.iconBadge,
+                                   {backgroundColor: tintColor + "20"},
+                              ]}>
+                              <IconSymbol
+                                   name="doc.text"
+                                   size={16}
+                                   color={tintColor}
+                              />
+                         </View>
+                         <ThemedText
+                              type="defaultSemiBold"
+                              style={styles.label}>
+                              Notes
+                         </ThemedText>
+                         <View style={styles.notesHeaderRight}>
+                              <ThemedText
+                                   type="default"
+                                   style={[styles.charCount, {opacity: 0.6}]}>
+                                   {notes.length}/2000
+                              </ThemedText>
+                              <TouchableOpacity
+                                   onPress={() =>
+                                        setIsNotesExpanded(!isNotesExpanded)
+                                   }
+                                   activeOpacity={0.7}>
+                                   <IconSymbol
+                                        name={
+                                             isNotesExpanded
+                                                  ? "chevron.up"
+                                                  : "chevron.down"
+                                        }
+                                        size={16}
+                                        color={tintColor}
+                                   />
+                              </TouchableOpacity>
+                         </View>
+                    </View>
+                    {isNotesExpanded && (
+                         <TextInput
+                              style={[
+                                   styles.notesInput,
+                                   {
+                                        backgroundColor: backgroundColor,
+                                        color: textColor,
+                                        borderColor,
+                                   },
+                              ]}
+                              value={notes}
+                              onChangeText={(text) => {
+                                   if (text.length <= 2000) {
+                                        setNotes(text);
+                                   }
+                              }}
+                              placeholder="Add detailed notes (supports markdown)"
+                              placeholderTextColor={
+                                   isDark ? "#94A3B8" : "#9CA3AF"
+                              }
+                              multiline
+                              numberOfLines={8}
+                              textAlignVertical="top"
+                              maxLength={2000}
+                         />
+                    )}
+                    {!isNotesExpanded && notes.length > 0 && (
+                         <TouchableOpacity
+                              onPress={() => setIsNotesExpanded(true)}
+                              activeOpacity={0.7}>
+                              <ThemedText
+                                   type="default"
+                                   style={[styles.notesPreview, {opacity: 0.7}]}
+                                   numberOfLines={2}>
+                                   {notes}
+                              </ThemedText>
+                         </TouchableOpacity>
+                    )}
                </View>
 
                {/* Category Section */}
@@ -457,6 +542,31 @@ const styles = StyleSheet.create({
           fontSize: 16,
           fontWeight: "400",
      },
+     notesHeaderRight: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          marginLeft: "auto",
+     },
+     charCount: {
+          fontSize: 12,
+          fontWeight: "500",
+     },
+     notesInput: {
+          minHeight: 150,
+          borderWidth: 1.5,
+          borderRadius: 12,
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          fontSize: 15,
+          fontWeight: "400",
+          fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+     },
+     notesPreview: {
+          fontSize: 14,
+          lineHeight: 20,
+          paddingVertical: 8,
+     },
      optionsRow: {
           flexDirection: "row",
           gap: 10,
@@ -465,11 +575,11 @@ const styles = StyleSheet.create({
      optionButton: {
           flexDirection: "row",
           alignItems: "center",
-          paddingHorizontal: 16,
-          paddingVertical: 10,
-          borderRadius: 20,
+          paddingHorizontal: 14,
+          paddingVertical: 6,
+          borderRadius: 16,
           borderWidth: 1.5,
-          minHeight: 38,
+          minHeight: 32,
           gap: 6,
      },
      checkIcon: {
@@ -483,11 +593,11 @@ const styles = StyleSheet.create({
      priorityButton: {
           flexDirection: "row",
           alignItems: "center",
-          paddingHorizontal: 14,
-          paddingVertical: 9,
-          borderRadius: 18,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+          borderRadius: 16,
           borderWidth: 1.5,
-          minHeight: 36,
+          minHeight: 32,
           gap: 6,
      },
      dateButton: {
@@ -528,5 +638,71 @@ const styles = StyleSheet.create({
           fontSize: 17,
           fontWeight: "700",
           letterSpacing: 0.3,
+     },
+     recurrenceOptions: {
+          marginTop: 16,
+          gap: 16,
+     },
+     intervalRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
+     },
+     intervalLabel: {
+          fontSize: 14,
+          fontWeight: "500",
+     },
+     intervalInput: {
+          width: 60,
+          height: 40,
+          borderWidth: 1.5,
+          borderRadius: 10,
+          paddingHorizontal: 10,
+          justifyContent: "center",
+     },
+     intervalTextInput: {
+          fontSize: 16,
+          fontWeight: "600",
+          textAlign: "center",
+     },
+     daysOfWeekContainer: {
+          gap: 12,
+     },
+     daysOfWeekRow: {
+          flexDirection: "row",
+          gap: 8,
+          flexWrap: "wrap",
+     },
+     dayButton: {
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          borderWidth: 1.5,
+          justifyContent: "center",
+          alignItems: "center",
+     },
+     dayButtonText: {
+          fontSize: 12,
+          fontWeight: "600",
+     },
+     endDateRow: {
+          gap: 10,
+     },
+     clearDateButton: {
+          padding: 4,
+     },
+     recurrencePreview: {
+          flexDirection: "row",
+          alignItems: "center",
+          padding: 12,
+          borderRadius: 10,
+          borderWidth: 1,
+          gap: 8,
+          marginTop: 8,
+     },
+     recurrencePreviewText: {
+          fontSize: 13,
+          fontWeight: "600",
+          flex: 1,
      },
 });

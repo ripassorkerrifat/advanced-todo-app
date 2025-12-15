@@ -31,6 +31,7 @@ export interface Task {
      id: string;
      title: string;
      description?: string;
+     notes?: string; // Rich text notes with markdown support
      category: TaskCategory;
      priority: TaskPriority;
      dueDate?: string; // ISO date string

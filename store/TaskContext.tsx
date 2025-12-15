@@ -4,8 +4,14 @@
  */
 
 import * as storageService from "@/services/storage";
-import {Task, TaskFilter, TaskSort} from "@/types/task";
-import {filterTasks, sortTasks} from "@/utils/task";
+import {
+     Task,
+     TaskCategory,
+     TaskFilter,
+     TaskPriority,
+     TaskSort,
+} from "@/types/task";
+import {filterTasks, searchTasks, sortTasks} from "@/utils/task";
 import React, {
      createContext,
      useCallback,
@@ -19,9 +25,15 @@ interface TaskContextType {
      filteredAndSortedTasks: Task[];
      filter: TaskFilter;
      sort: TaskSort;
+     searchQuery: string;
+     searchCategory?: TaskCategory;
+     searchPriority?: TaskPriority;
      isLoading: boolean;
      setFilter: (filter: TaskFilter) => void;
      setSort: (sort: TaskSort) => void;
+     setSearchQuery: (query: string) => void;
+     setSearchCategory: (category?: TaskCategory) => void;
+     setSearchPriority: (priority?: TaskPriority) => void;
      addTask: (task: Omit<Task, "id" | "createdAt">) => Promise<void>;
      updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
      deleteTask: (taskId: string) => Promise<void>;
@@ -37,6 +49,13 @@ export const TaskProvider: React.FC<{children: React.ReactNode}> = ({
      const [tasks, setTasks] = useState<Task[]>([]);
      const [filter, setFilter] = useState<TaskFilter>(TaskFilter.ALL);
      const [sort, setSort] = useState<TaskSort>(TaskSort.CREATED_DATE);
+     const [searchQuery, setSearchQuery] = useState("");
+     const [searchCategory, setSearchCategory] = useState<
+          TaskCategory | undefined
+     >();
+     const [searchPriority, setSearchPriority] = useState<
+          TaskPriority | undefined
+     >();
      const [isLoading, setIsLoading] = useState(true);
 
      // Load tasks on mount
@@ -45,11 +64,17 @@ export const TaskProvider: React.FC<{children: React.ReactNode}> = ({
           // eslint-disable-next-line react-hooks/exhaustive-deps
      }, []);
 
-     // Compute filtered and sorted tasks
+     // Compute filtered, searched, and sorted tasks
      const filteredAndSortedTasks = React.useMemo(() => {
           const filtered = filterTasks(tasks, filter);
-          return sortTasks(filtered, sort);
-     }, [tasks, filter, sort]);
+          const searched = searchTasks(
+               filtered,
+               searchQuery,
+               searchCategory,
+               searchPriority
+          );
+          return sortTasks(searched, sort);
+     }, [tasks, filter, sort, searchQuery, searchCategory, searchPriority]);
 
      const loadTasks = useCallback(async () => {
           try {
@@ -133,9 +158,15 @@ export const TaskProvider: React.FC<{children: React.ReactNode}> = ({
           filteredAndSortedTasks,
           filter,
           sort,
+          searchQuery,
+          searchCategory,
+          searchPriority,
           isLoading,
           setFilter,
           setSort,
+          setSearchQuery,
+          setSearchCategory,
+          setSearchPriority,
           addTask,
           updateTask,
           deleteTask,

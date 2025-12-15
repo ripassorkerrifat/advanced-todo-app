@@ -12,13 +12,7 @@ import {useTheme} from "@/store/ThemeContext";
 import {Task} from "@/types/task";
 import {useLocalSearchParams, useRouter} from "expo-router";
 import React, {useEffect, useState} from "react";
-import {
-     Alert,
-     Platform,
-     StyleSheet,
-     TouchableOpacity,
-     View,
-} from "react-native";
+import {Alert, StyleSheet, TouchableOpacity, View} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 
 export default function EditTaskScreen() {
@@ -27,7 +21,9 @@ export default function EditTaskScreen() {
      const {tasks, updateTask, deleteTask} = useTasks();
      const [task, setTask] = useState<Task | null>(null);
      const {currentTheme} = useTheme();
-     const textColor = Colors[currentTheme].text;
+     const backgroundColor = Colors[currentTheme].background;
+     const borderColor = Colors[currentTheme].border;
+     const tintColor = Colors[currentTheme].tint;
 
      useEffect(() => {
           if (taskId) {
@@ -93,38 +89,67 @@ export default function EditTaskScreen() {
      }
 
      return (
-          <SafeAreaView style={styles.container} edges={["top"]}>
-               <ThemedView style={styles.container}>
-                    <View style={styles.header}>
-                         <TouchableOpacity
-                              onPress={() => router.back()}
-                              style={styles.backButton}>
+          <SafeAreaView
+               style={[styles.container, {backgroundColor}]}
+               edges={["top"]}>
+               {/* Fixed Header */}
+               <View
+                    style={[
+                         styles.header,
+                         {
+                              backgroundColor: backgroundColor,
+                              borderBottomColor: borderColor,
+                         },
+                    ]}>
+                    <TouchableOpacity
+                         onPress={() => router.back()}
+                         style={styles.backButton}
+                         activeOpacity={0.7}>
+                         <View
+                              style={[
+                                   styles.backButtonIcon,
+                                   {backgroundColor: tintColor + "20"},
+                              ]}>
                               <IconSymbol
                                    name="chevron.left"
-                                   size={24}
-                                   color={textColor}
+                                   size={18}
+                                   color={tintColor}
                               />
-                         </TouchableOpacity>
+                         </View>
+                    </TouchableOpacity>
+                    <View style={styles.titleSection}>
                          <ThemedText type="title" style={styles.title}>
                               Edit Task
                          </ThemedText>
-                         <TouchableOpacity
-                              onPress={handleDelete}
-                              style={styles.deleteButton}>
+                         <ThemedText
+                              type="default"
+                              style={[styles.subtitle, {opacity: 0.6}]}>
+                              Update task details
+                         </ThemedText>
+                    </View>
+                    <TouchableOpacity
+                         onPress={handleDelete}
+                         style={styles.deleteButton}
+                         activeOpacity={0.7}>
+                         <View
+                              style={[
+                                   styles.deleteButtonIcon,
+                                   {backgroundColor: "#EF444420"},
+                              ]}>
                               <IconSymbol
                                    name="trash"
-                                   size={24}
+                                   size={16}
                                    color="#EF4444"
                               />
-                         </TouchableOpacity>
-                    </View>
+                         </View>
+                    </TouchableOpacity>
+               </View>
 
-                    <TaskForm
-                         initialData={task}
-                         onSubmit={handleSubmit}
-                         submitLabel="Save Changes"
-                    />
-               </ThemedView>
+               <TaskForm
+                    initialData={task}
+                    onSubmit={handleSubmit}
+                    submitLabel="Save Changes"
+               />
           </SafeAreaView>
      );
 }
@@ -136,19 +161,39 @@ const styles = StyleSheet.create({
      header: {
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: 16,
-          paddingTop: Platform.OS === "ios" ? 60 : 20,
-          paddingBottom: 16,
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+          borderBottomWidth: 1,
      },
      backButton: {
-          padding: 8,
+          marginRight: 12,
+     },
+     backButtonIcon: {
+          width: 36,
+          height: 36,
+          borderRadius: 18,
+          justifyContent: "center",
+          alignItems: "center",
+     },
+     titleSection: {
+          flex: 1,
      },
      title: {
-          fontSize: 20,
+          fontSize: 24,
           fontWeight: "700",
+          marginBottom: 2,
+     },
+     subtitle: {
+          fontSize: 13,
      },
      deleteButton: {
-          padding: 8,
+          marginLeft: 8,
+     },
+     deleteButtonIcon: {
+          width: 36,
+          height: 36,
+          borderRadius: 18,
+          justifyContent: "center",
+          alignItems: "center",
      },
 });
