@@ -6,8 +6,10 @@ import {ThemedText} from "@/components/themed-text";
 import {IconSymbol} from "@/components/ui/icon-symbol";
 import {Colors} from "@/constants/theme";
 import * as storageService from "@/services/storage";
+import {useProfile} from "@/store/ProfileContext";
 import {useTasks} from "@/store/TaskContext";
 import {useTheme} from "@/store/ThemeContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React from "react";
 import {
      Alert,
@@ -21,6 +23,7 @@ import {SafeAreaView} from "react-native-safe-area-context";
 export default function SettingsScreen() {
      const {currentTheme, themeMode, setThemeMode} = useTheme();
      const {tasks, loadTasks} = useTasks();
+     const {loadProfile} = useProfile();
      const backgroundColor = Colors[currentTheme].background;
      const cardColor = Colors[currentTheme].card;
      const borderColor = Colors[currentTheme].border;
@@ -51,6 +54,50 @@ export default function SettingsScreen() {
                                    Alert.alert(
                                         "Error",
                                         "Failed to clear tasks"
+                                   );
+                              }
+                         },
+                    },
+               ]
+          );
+     };
+
+     const handleResetApp = () => {
+          Alert.alert(
+               "Reset App Data",
+               "This will clear all tasks, profile information, onboarding, and theme settings. The app will behave like a brand new install.\n\nAre you sure?",
+               [
+                    {text: "Cancel", style: "cancel"},
+                    {
+                         text: "Reset",
+                         style: "destructive",
+                         onPress: async () => {
+                              try {
+                                   // Clear known storage keys
+                                   await AsyncStorage.multiRemove([
+                                        "@todo_app:tasks",
+                                        "@todo_app:profile",
+                                        "@todo_app:onboarding_completed_v1",
+                                        "@todo_app:theme_mode",
+                                   ]);
+
+                                   // Reload in-memory state
+                                   await loadTasks();
+                                   await loadProfile();
+                                   await setThemeMode("system");
+
+                                   Alert.alert(
+                                        "App Reset",
+                                        "All local data has been cleared."
+                                   );
+                              } catch (error) {
+                                   console.error(
+                                        "Error resetting app data:",
+                                        error
+                                   );
+                                   Alert.alert(
+                                        "Error",
+                                        "Failed to reset app data"
                                    );
                               }
                          },
@@ -334,6 +381,33 @@ export default function SettingsScreen() {
                                    Clear All Tasks
                               </ThemedText>
                          </TouchableOpacity>
+
+                         <TouchableOpacity
+                              style={[
+                                   styles.resetButton,
+                                   {
+                                        backgroundColor:
+                                             currentTheme === "dark"
+                                                  ? "#0F172A"
+                                                  : "#FFFFFF",
+                                        borderColor,
+                                   },
+                              ]}
+                              onPress={handleResetApp}
+                              activeOpacity={0.7}>
+                              <IconSymbol
+                                   name="gearshape.fill"
+                                   size={18}
+                                   color={tintColor}
+                              />
+                              <ThemedText
+                                   style={[
+                                        styles.resetText,
+                                        {color: tintColor},
+                                   ]}>
+                                   Reset App Data (testing)
+                              </ThemedText>
+                         </TouchableOpacity>
                     </View>
 
                     {/* Footer */}
@@ -481,6 +555,23 @@ const styles = StyleSheet.create({
      },
      dangerText: {
           fontSize: 16,
+          fontWeight: "600",
+          letterSpacing: 0.2,
+     },
+     resetButton: {
+          marginTop: 10,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          borderRadius: 12,
+          borderWidth: 1.5,
+          minHeight: 48,
+     },
+     resetText: {
+          fontSize: 14,
           fontWeight: "600",
           letterSpacing: 0.2,
      },

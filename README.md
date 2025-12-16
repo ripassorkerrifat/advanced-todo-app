@@ -1,50 +1,213 @@
-# Welcome to your Expo app 👋
+## Advanced Offline Todo App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+An offline‑first, single‑device task manager built with **Expo + React Native + TypeScript**.  
+All data (tasks, profile, preferences) lives in **AsyncStorage** – no backend, no analytics, no hidden sync.
 
-## Get started
+The app is designed to feel like a real, hand‑crafted product: opinionated, fast, and focused on daily use.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## Core features
 
-2. Start the app
+-    **Tasks**
 
-   ```bash
-   npx expo start
-   ```
+     -    Title, description, optional notes (markdown‑friendly text area)
+     -    Category: Work, Personal, Study
+     -    Priority: Low, Medium, High
+     -    Optional due date
+     -    Completed / pending state with timestamps
 
-In the output, you'll find options to open the app in a
+-    **Task list**
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+     -    Fast `FlatList` with swipe gestures:
+          -    Swipe right → complete
+          -    Swipe left → delete with undo snackbar
+     -    Long‑press context menu (edit / complete / delete)
+     -    Batch mode: select multiple tasks, bulk complete or delete
+     -    Compact stats row (Pending / Done / Overdue)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+-    **Search & filters**
 
-## Get a fresh project
+     -    Live search across title, description and notes
+     -    Highlighted matches in the list
+     -    Category / priority search filters
+     -    Filter bar (All, Pending, Completed, Overdue)
+     -    Sort by created date, priority or due date
+     -    Dedicated **Filter & Sort** bottom sheet, triggered from the search bar
 
-When you're ready, run:
+-    **Notes**
+
+     -    Rich notes field in the task form
+     -    Monospace input with character count
+     -    “Has notes” indicator in the list item
+
+-    **Profile**
+
+     -    On first run, onboarding flow asks for:
+          -    Name
+          -    Email
+          -    Phone
+     -    Data is stored locally and can be updated in Profile screen
+
+-    **Settings**
+
+     -    Theme: Light / Dark / System
+     -    Task statistics (total, completed, pending)
+     -    “Clear All Tasks” button
+     -    “Reset App Data (testing)” button:
+          -    Clears tasks, profile, onboarding flag and theme preference
+          -    App behaves like a fresh install
+
+-    **Security & onboarding**
+     -    **Biometric gate** using `expo-local-authentication`
+          -    Fingerprint / Face ID / device passcode
+          -    If biometrics aren’t available or enrolled, the app just opens
+     -    **Onboarding screens**
+          -    Hero image with curved bottom edge
+          -    Step 1: collect name, email, phone (required for brand‑new users)
+          -    Step 2–3: explain features and gestures
+
+---
+
+## Tech stack
+
+-    **App shell**: Expo, React Native, TypeScript
+-    **Navigation**: Expo Router (file‑based routing under `app/`)
+-    **State management**:
+     -    `TaskContext` – tasks, filters, search, batch actions
+     -    `ThemeContext` – theme mode + current theme
+     -    `ProfileContext` – user profile
+-    **Storage**:
+     -    `services/storage.ts` – tasks in AsyncStorage
+     -    `services/profileStorage.ts` – profile in AsyncStorage
+-    **UI utilities**:
+     -    `ThemedText`, `ThemedView` – theme‑aware typography and containers
+     -    `IconSymbol` – SF Symbols‑style names mapped to MaterialIcons
+     -    `EmptyState`, `UndoSnackbar`, `TaskContextMenu`, `TaskItem`, `TaskForm`
+
+---
+
+## Project structure (simplified)
+
+-    `app/`
+
+     -    `_layout.tsx` – root navigation, providers, biometric + onboarding gates
+     -    `(tabs)/`
+          -    `index.tsx` – Home (task list, stats, search, filter sheet)
+          -    `profile.tsx` – profile display/update
+          -    `settings.tsx` – theme, stats, data management
+     -    `add-task.tsx` – add task screen
+     -    `edit-task.tsx` – edit task screen
+
+-    `components/`
+
+     -    `onboarding/OnboardingGate.tsx`
+     -    `security/BiometricGate.tsx`
+     -    `tasks/TaskItem.tsx`, `TaskForm.tsx`, `EmptyState.tsx`, `UndoSnackbar.tsx`, etc.
+     -    `ui/icon-symbol.tsx`, `themed-text.tsx`, `themed-view.tsx`
+
+-    `store/`
+
+     -    `TaskContext.tsx`
+     -    `ThemeContext.tsx`
+     -    `ProfileContext.tsx`
+
+-    `services/`
+
+     -    `storage.ts`
+     -    `profileStorage.ts`
+
+-    `types/`
+     -    `task.ts`
+     -    `profile.ts`
+
+---
+
+## Running the app
+
+Install dependencies:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Start the dev server:
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+You can then open the app in:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+-    iOS Simulator
+-    Android Emulator
+-    A physical device using Expo Go
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## Deploying to a real Android device (EAS Build)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+This project is configured to use **EAS Build** for Android. Below is the basic flow.
+
+### First‑time setup & first build
+
+1. Install the EAS CLI:
+
+     ```bash
+     npm install -g eas-cli
+     ```
+
+2. Log in to your Expo account:
+
+     ```bash
+     eas login
+     ```
+
+3. Configure EAS for this project (one‑time):
+
+     ```bash
+     eas build:configure
+     ```
+
+     When prompted for platforms, you can start with **Android**.
+
+4. Create your first Android build:
+
+     ```bash
+     eas build --platform android --profile preview
+     ```
+
+     - Choose an Android application id (e.g. `com.yourname.advancedtodoapp`).
+     - EAS will generate and manage the keystore for you.
+     - When the build finishes, Expo will give you a link and QR code you can use to install the app on a real device.
+
+### After you change code – how to update the installed app
+
+The APK/AAB produced by EAS is a snapshot of your code at build time.  
+If you change anything and want those changes on your device:
+
+1. Make and save your changes locally.
+2. (Optional) Test locally:
+
+     ```bash
+     npx expo start
+     ```
+
+3. Trigger a new build:
+
+     ```bash
+     eas build --platform android --profile preview
+     ```
+
+4. Wait for the build to complete, then install the **new** build link on your device.
+
+Each time you want the installed app to reflect new code, you create a new EAS build.
+
+> You can later introduce **EAS Update** for over‑the‑air JS updates, but this project currently keeps it simple: code changes are shipped via new builds.
+
+---
+
+## Notes
+
+-    The app is intentionally **offline‑only**. If you need sync or collaboration later, you can layer a backend on top of the existing contexts and storage services.
+-    The UI is tuned for both light and dark themes with a purple primary palette and dark blue‑black background on dark mode.

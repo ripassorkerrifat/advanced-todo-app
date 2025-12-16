@@ -2,7 +2,13 @@
  * Task utility functions for filtering and sorting
  */
 
-import {Task, TaskFilter, TaskPriority, TaskSort} from "@/types/task";
+import {
+     Task,
+     TaskCategory,
+     TaskFilter,
+     TaskPriority,
+     TaskSort,
+} from "@/types/task";
 import {isOverdue} from "@/utils/date";
 
 /**
@@ -95,4 +101,76 @@ export const getCategoryColor = (category: string): string => {
           default:
                return "#6B7280"; // gray
      }
+};
+
+/**
+ * Search tasks by query string
+ */
+export const searchTasks = (
+     tasks: Task[],
+     query: string,
+     category?: TaskCategory,
+     priority?: TaskPriority
+): Task[] => {
+     if (!query.trim() && !category && !priority) {
+          return tasks;
+     }
+
+     const lowerQuery = query.toLowerCase().trim();
+
+     return tasks.filter((task) => {
+          // Text search
+          const matchesText =
+               !lowerQuery ||
+               task.title.toLowerCase().includes(lowerQuery) ||
+               task.description?.toLowerCase().includes(lowerQuery) ||
+               task.notes?.toLowerCase().includes(lowerQuery);
+
+          // Category filter
+          const matchesCategory = !category || task.category === category;
+
+          // Priority filter
+          const matchesPriority = !priority || task.priority === priority;
+
+          return matchesText && matchesCategory && matchesPriority;
+     });
+};
+
+/**
+ * Highlight matching text in a string
+ */
+export const highlightText = (
+     text: string,
+     query: string
+): {text: string; highlight: boolean}[] => {
+     if (!query.trim()) {
+          return [{text, highlight: false}];
+     }
+
+     const lowerText = text.toLowerCase();
+     const lowerQuery = query.toLowerCase();
+     const parts: {text: string; highlight: boolean}[] = [];
+     let lastIndex = 0;
+     let index = lowerText.indexOf(lowerQuery, lastIndex);
+
+     while (index !== -1) {
+          if (index > lastIndex) {
+               parts.push({
+                    text: text.substring(lastIndex, index),
+                    highlight: false,
+               });
+          }
+          parts.push({
+               text: text.substring(index, index + query.length),
+               highlight: true,
+          });
+          lastIndex = index + query.length;
+          index = lowerText.indexOf(lowerQuery, lastIndex);
+     }
+
+     if (lastIndex < text.length) {
+          parts.push({text: text.substring(lastIndex), highlight: false});
+     }
+
+     return parts.length > 0 ? parts : [{text, highlight: false}];
 };

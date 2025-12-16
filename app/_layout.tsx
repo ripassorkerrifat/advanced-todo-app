@@ -10,6 +10,8 @@ import "react-native-reanimated";
 import {SafeAreaProvider} from "react-native-safe-area-context";
 import "../global.css";
 
+import {OnboardingGate} from "@/components/onboarding/OnboardingGate";
+import {BiometricGate} from "@/components/security/BiometricGate";
 import {ProfileProvider} from "@/store/ProfileContext";
 import {TaskProvider} from "@/store/TaskContext";
 import {ThemeProvider, useTheme} from "@/store/ThemeContext";
@@ -24,33 +26,37 @@ function AppContent() {
      return (
           <NavThemeProvider
                value={currentTheme === "dark" ? DarkTheme : DefaultTheme}>
-               <Stack>
-                    <Stack.Screen
-                         name="(tabs)"
-                         options={{headerShown: false}}
-                    />
-                    <Stack.Screen
-                         name="add-task"
-                         options={{
-                              presentation: "modal",
-                              headerShown: false,
-                         }}
-                    />
-                    <Stack.Screen
-                         name="edit-task"
-                         options={{
-                              presentation: "modal",
-                              headerShown: false,
-                         }}
-                    />
-                    <Stack.Screen
-                         name="modal"
-                         options={{
-                              presentation: "modal",
-                              title: "Modal",
-                         }}
-                    />
-               </Stack>
+               <BiometricGate>
+                    <OnboardingGate>
+                         <Stack>
+                              <Stack.Screen
+                                   name="(tabs)"
+                                   options={{headerShown: false}}
+                              />
+                              <Stack.Screen
+                                   name="add-task"
+                                   options={{
+                                        presentation: "modal",
+                                        headerShown: false,
+                                   }}
+                              />
+                              <Stack.Screen
+                                   name="edit-task"
+                                   options={{
+                                        presentation: "modal",
+                                        headerShown: false,
+                                   }}
+                              />
+                              <Stack.Screen
+                                   name="modal"
+                                   options={{
+                                        presentation: "modal",
+                                        title: "Modal",
+                                   }}
+                              />
+                         </Stack>
+                    </OnboardingGate>
+               </BiometricGate>
                <StatusBar style={currentTheme === "dark" ? "light" : "dark"} />
           </NavThemeProvider>
      );
