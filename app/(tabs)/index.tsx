@@ -22,6 +22,7 @@ import {useRouter} from "expo-router";
 import React, {useCallback, useState} from "react";
 import {
      FlatList,
+     Modal,
      Platform,
      RefreshControl,
      ScrollView,
@@ -59,6 +60,7 @@ export default function TaskListScreen() {
      const [contextMenuTask, setContextMenuTask] = useState<Task | null>(null);
      const [showContextMenu, setShowContextMenu] = useState(false);
      const [batchMode, setBatchMode] = useState(false);
+     const [showFilterSheet, setShowFilterSheet] = useState(false);
      const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
 
      const handleDelete = useCallback(async (task: Task) => {
@@ -208,7 +210,7 @@ export default function TaskListScreen() {
 
      const ListHeaderComponent = () => (
           <>
-               {/* Stats Section - Redesigned */}
+               {/* Compact Stats Row */}
                <View style={styles.statsSection}>
                     {shortcuts.map((shortcut) => (
                          <TouchableOpacity
@@ -241,162 +243,9 @@ export default function TaskListScreen() {
                                         style={styles.statBoxLabel}>
                                         {shortcut.label}
                                    </ThemedText>
-                                   <ThemedText
-                                        type="default"
-                                        style={[
-                                             styles.statBoxSub,
-                                             {opacity: 0.6},
-                                        ]}>
-                                        tasks
-                                   </ThemedText>
                               </View>
                          </TouchableOpacity>
                     ))}
-               </View>
-
-               {/* Modern Filter & Sort Section */}
-               <View
-                    style={[
-                         styles.controlsSection,
-                         {
-                              backgroundColor: backgroundColor,
-                         },
-                    ]}>
-                    {/* Filter Section */}
-                    <View style={styles.filterContainer}>
-                         <View style={styles.filterHeaderRow}>
-                              <View
-                                   style={[
-                                        styles.filterIconBadge,
-                                        {backgroundColor: tintColor + "20"},
-                                   ]}>
-                                   <IconSymbol
-                                        name="list.bullet"
-                                        size={16}
-                                        color={tintColor}
-                                   />
-                              </View>
-                              <ThemedText
-                                   type="defaultSemiBold"
-                                   style={styles.filterSectionTitle}>
-                                   Filter Tasks
-                              </ThemedText>
-                         </View>
-                         <ScrollView
-                              horizontal
-                              showsHorizontalScrollIndicator={false}
-                              contentContainerStyle={styles.filterChipsRow}>
-                              {Object.values(TaskFilter).map((f) => {
-                                   const isActive = filter === f;
-                                   return (
-                                        <TouchableOpacity
-                                             key={f}
-                                             onPress={() => setFilter(f)}
-                                             activeOpacity={0.7}
-                                             style={[
-                                                  styles.filterButton,
-                                                  {
-                                                       backgroundColor: isActive
-                                                            ? tintColor
-                                                            : "transparent",
-                                                       borderColor: isActive
-                                                            ? tintColor
-                                                            : borderColor,
-                                                  },
-                                             ]}>
-                                             {isActive && (
-                                                  <IconSymbol
-                                                       name="checkmark"
-                                                       size={14}
-                                                       color="#FFFFFF"
-                                                  />
-                                             )}
-                                             <ThemedText
-                                                  style={[
-                                                       styles.filterButtonText,
-                                                       {
-                                                            color: isActive
-                                                                 ? "#FFFFFF"
-                                                                 : Colors[
-                                                                        currentTheme
-                                                                   ].text,
-                                                       },
-                                                  ]}>
-                                                  {f}
-                                             </ThemedText>
-                                        </TouchableOpacity>
-                                   );
-                              })}
-                         </ScrollView>
-                    </View>
-
-                    {/* Sort Section */}
-                    <View style={styles.sortContainer}>
-                         <View style={styles.filterHeaderRow}>
-                              <View
-                                   style={[
-                                        styles.filterIconBadge,
-                                        {backgroundColor: tintColor + "20"},
-                                   ]}>
-                                   <IconSymbol
-                                        name="calendar"
-                                        size={16}
-                                        color={tintColor}
-                                   />
-                              </View>
-                              <ThemedText
-                                   type="defaultSemiBold"
-                                   style={styles.filterSectionTitle}>
-                                   Sort By
-                              </ThemedText>
-                         </View>
-                         <ScrollView
-                              horizontal
-                              showsHorizontalScrollIndicator={false}
-                              contentContainerStyle={styles.filterChipsRow}>
-                              {Object.values(TaskSort).map((s) => {
-                                   const isActive = sort === s;
-                                   return (
-                                        <TouchableOpacity
-                                             key={s}
-                                             onPress={() => setSort(s)}
-                                             activeOpacity={0.7}
-                                             style={[
-                                                  styles.sortButton,
-                                                  {
-                                                       backgroundColor: isActive
-                                                            ? tintColor
-                                                            : "transparent",
-                                                       borderColor: isActive
-                                                            ? tintColor
-                                                            : borderColor,
-                                                  },
-                                             ]}>
-                                             {isActive && (
-                                                  <IconSymbol
-                                                       name="checkmark"
-                                                       size={13}
-                                                       color="#FFFFFF"
-                                                  />
-                                             )}
-                                             <ThemedText
-                                                  style={[
-                                                       styles.sortButtonText,
-                                                       {
-                                                            color: isActive
-                                                                 ? "#FFFFFF"
-                                                                 : Colors[
-                                                                        currentTheme
-                                                                   ].text,
-                                                       },
-                                                  ]}>
-                                                  {s}
-                                             </ThemedText>
-                                        </TouchableOpacity>
-                                   );
-                              })}
-                         </ScrollView>
-                    </View>
                </View>
           </>
      );
@@ -502,6 +351,16 @@ export default function TaskListScreen() {
                                    />
                               </TouchableOpacity>
                          )}
+                         <TouchableOpacity
+                              onPress={() => setShowFilterSheet(true)}
+                              activeOpacity={0.7}
+                              style={styles.searchFilterButton}>
+                              <IconSymbol
+                                   name="arrow.up.arrow.down"
+                                   size={18}
+                                   color={tintColor}
+                              />
+                         </TouchableOpacity>
                     </View>
 
                     {(searchQuery.length > 0 ||
@@ -884,6 +743,200 @@ export default function TaskListScreen() {
                     onDismiss={handleDismissUndo}
                     message="Task deleted"
                />
+
+               {/* Filter & Sort Bottom Sheet */}
+               <Modal
+                    visible={showFilterSheet}
+                    transparent
+                    animationType="slide"
+                    onRequestClose={() => setShowFilterSheet(false)}>
+                    <View style={styles.sheetOverlay}>
+                         <TouchableOpacity
+                              style={styles.sheetBackdrop}
+                              activeOpacity={1}
+                              onPress={() => setShowFilterSheet(false)}
+                         />
+                         <View
+                              style={[
+                                   styles.sheetContainer,
+                                   {
+                                        backgroundColor: cardColor,
+                                        borderTopColor: borderColor,
+                                   },
+                              ]}>
+                              <View style={styles.sheetHandle} />
+                              <View style={styles.sheetHeaderRow}>
+                                   <ThemedText
+                                        type="defaultSemiBold"
+                                        style={styles.sheetTitle}>
+                                        Filter & Sort
+                                   </ThemedText>
+                                   <TouchableOpacity
+                                        onPress={() =>
+                                             setShowFilterSheet(false)
+                                        }>
+                                        <IconSymbol
+                                             name="xmark.circle.fill"
+                                             size={20}
+                                             color={Colors[currentTheme].text}
+                                        />
+                                   </TouchableOpacity>
+                              </View>
+
+                              <ScrollView
+                                   showsVerticalScrollIndicator={false}
+                                   contentContainerStyle={styles.sheetContent}>
+                                   {/* Filter Section */}
+                                   <View style={styles.sheetSection}>
+                                        <View style={styles.sheetSectionHeader}>
+                                             <IconSymbol
+                                                  name="list.bullet"
+                                                  size={16}
+                                                  color={tintColor}
+                                             />
+                                             <ThemedText
+                                                  type="defaultSemiBold"
+                                                  style={
+                                                       styles.sheetSectionTitle
+                                                  }>
+                                                  Filter Tasks
+                                             </ThemedText>
+                                        </View>
+                                        <View style={styles.sheetChipRow}>
+                                             {Object.values(TaskFilter).map(
+                                                  (f) => {
+                                                       const isActive =
+                                                            filter === f;
+                                                       return (
+                                                            <TouchableOpacity
+                                                                 key={f}
+                                                                 onPress={() =>
+                                                                      setFilter(
+                                                                           f
+                                                                      )
+                                                                 }
+                                                                 activeOpacity={
+                                                                      0.7
+                                                                 }
+                                                                 style={[
+                                                                      styles.sheetChip,
+                                                                      {
+                                                                           backgroundColor:
+                                                                                isActive
+                                                                                     ? tintColor
+                                                                                     : "transparent",
+                                                                           borderColor:
+                                                                                isActive
+                                                                                     ? tintColor
+                                                                                     : borderColor,
+                                                                      },
+                                                                 ]}>
+                                                                 {isActive && (
+                                                                      <IconSymbol
+                                                                           name="checkmark"
+                                                                           size={
+                                                                                12
+                                                                           }
+                                                                           color="#FFFFFF"
+                                                                      />
+                                                                 )}
+                                                                 <ThemedText
+                                                                      style={[
+                                                                           styles.sheetChipText,
+                                                                           {
+                                                                                color: isActive
+                                                                                     ? "#FFFFFF"
+                                                                                     : Colors[
+                                                                                            currentTheme
+                                                                                       ]
+                                                                                            .text,
+                                                                           },
+                                                                      ]}>
+                                                                      {f}
+                                                                 </ThemedText>
+                                                            </TouchableOpacity>
+                                                       );
+                                                  }
+                                             )}
+                                        </View>
+                                   </View>
+
+                                   {/* Sort Section */}
+                                   <View style={styles.sheetSection}>
+                                        <View style={styles.sheetSectionHeader}>
+                                             <IconSymbol
+                                                  name="arrow.up.arrow.down"
+                                                  size={16}
+                                                  color={tintColor}
+                                             />
+                                             <ThemedText
+                                                  type="defaultSemiBold"
+                                                  style={
+                                                       styles.sheetSectionTitle
+                                                  }>
+                                                  Sort By
+                                             </ThemedText>
+                                        </View>
+                                        <View style={styles.sheetChipRow}>
+                                             {Object.values(TaskSort).map(
+                                                  (s) => {
+                                                       const isActive =
+                                                            sort === s;
+                                                       return (
+                                                            <TouchableOpacity
+                                                                 key={s}
+                                                                 onPress={() =>
+                                                                      setSort(s)
+                                                                 }
+                                                                 activeOpacity={
+                                                                      0.7
+                                                                 }
+                                                                 style={[
+                                                                      styles.sheetChip,
+                                                                      {
+                                                                           backgroundColor:
+                                                                                isActive
+                                                                                     ? tintColor
+                                                                                     : "transparent",
+                                                                           borderColor:
+                                                                                isActive
+                                                                                     ? tintColor
+                                                                                     : borderColor,
+                                                                      },
+                                                                 ]}>
+                                                                 {isActive && (
+                                                                      <IconSymbol
+                                                                           name="checkmark"
+                                                                           size={
+                                                                                12
+                                                                           }
+                                                                           color="#FFFFFF"
+                                                                      />
+                                                                 )}
+                                                                 <ThemedText
+                                                                      style={[
+                                                                           styles.sheetChipText,
+                                                                           {
+                                                                                color: isActive
+                                                                                     ? "#FFFFFF"
+                                                                                     : Colors[
+                                                                                            currentTheme
+                                                                                       ]
+                                                                                            .text,
+                                                                           },
+                                                                      ]}>
+                                                                      {s}
+                                                                 </ThemedText>
+                                                            </TouchableOpacity>
+                                                       );
+                                                  }
+                                             )}
+                                        </View>
+                                   </View>
+                              </ScrollView>
+                         </View>
+                    </View>
+               </Modal>
           </SafeAreaView>
      );
 }
@@ -952,6 +1005,12 @@ const styles = StyleSheet.create({
           gap: 8,
           paddingRight: 20,
      },
+     searchFilterButton: {
+          marginLeft: 4,
+          paddingHorizontal: 6,
+          paddingVertical: 4,
+          borderRadius: 10,
+     },
      searchFilterChip: {
           flexDirection: "row",
           alignItems: "center",
@@ -972,15 +1031,16 @@ const styles = StyleSheet.create({
      },
      statsSection: {
           flexDirection: "row",
-          paddingHorizontal: 20,
-          paddingTop: 20,
-          paddingBottom: 16,
-          gap: 10,
+          paddingHorizontal: 16,
+          paddingTop: 8,
+          paddingBottom: 8,
+          gap: 8,
      },
      statBox: {
           flex: 1,
-          padding: 14,
-          borderRadius: 16,
+          paddingVertical: 8,
+          paddingHorizontal: 10,
+          borderRadius: 14,
           borderLeftWidth: 4,
           borderTopWidth: 1,
           borderRightWidth: 1,
@@ -988,84 +1048,84 @@ const styles = StyleSheet.create({
           borderTopColor: "transparent",
           borderRightColor: "transparent",
           borderBottomColor: "transparent",
-          minHeight: 100,
+          minHeight: 72,
           flexDirection: "column",
           justifyContent: "space-between",
      },
      statBoxContent: {
           alignItems: "center",
           justifyContent: "flex-start",
-          paddingTop: 2,
+          paddingTop: 0,
      },
      statCircle: {
-          width: 48,
-          height: 48,
-          borderRadius: 24,
+          width: 36,
+          height: 36,
+          borderRadius: 18,
           justifyContent: "center",
           alignItems: "center",
      },
      statCircleText: {
-          fontSize: 20,
+          fontSize: 16,
           fontWeight: "800",
           color: "#FFFFFF",
      },
      statBoxText: {
           alignItems: "center",
           justifyContent: "flex-end",
-          gap: 2,
-          paddingBottom: 2,
+          gap: 0,
+          paddingBottom: 0,
      },
      statBoxLabel: {
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: "700",
           textAlign: "center",
      },
      statBoxSub: {
-          fontSize: 11,
-          fontWeight: "400",
+          fontSize: 10,
+          fontWeight: "500",
           textAlign: "center",
      },
      controlsSection: {
-          paddingVertical: 16,
-          paddingHorizontal: 20,
-          gap: 16,
+          paddingVertical: 8,
+          paddingHorizontal: 16,
+          gap: 8,
      },
      filterContainer: {
-          gap: 12,
+          gap: 6,
      },
      sortContainer: {
-          gap: 12,
+          gap: 6,
      },
      filterHeaderRow: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 8,
-          marginBottom: 4,
+          gap: 6,
+          marginBottom: 2,
      },
      filterIconBadge: {
-          width: 28,
-          height: 28,
-          borderRadius: 14,
+          width: 24,
+          height: 24,
+          borderRadius: 12,
           justifyContent: "center",
           alignItems: "center",
      },
      filterSectionTitle: {
-          fontSize: 13,
+          fontSize: 12,
           fontWeight: "700",
           letterSpacing: 0.3,
      },
      filterChipsRow: {
-          gap: 10,
-          paddingRight: 20,
+          gap: 8,
+          paddingRight: 8,
      },
      filterButton: {
           flexDirection: "row",
           alignItems: "center",
-          paddingHorizontal: 14,
-          paddingVertical: 7,
-          borderRadius: 18,
+          paddingHorizontal: 10,
+          paddingVertical: 5,
+          borderRadius: 14,
           borderWidth: 1.5,
-          minHeight: 32,
+          minHeight: 26,
           gap: 6,
      },
      filterButtonText: {
@@ -1087,6 +1147,76 @@ const styles = StyleSheet.create({
           fontSize: 11,
           fontWeight: "600",
           letterSpacing: 0.2,
+     },
+     sheetOverlay: {
+          flex: 1,
+          justifyContent: "flex-end",
+          backgroundColor: "rgba(0,0,0,0.35)",
+     },
+     sheetBackdrop: {
+          flex: 1,
+     },
+     sheetContainer: {
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          borderTopWidth: 1,
+          paddingHorizontal: 16,
+          paddingTop: 8,
+          paddingBottom: 24,
+          maxHeight: "60%",
+     },
+     sheetHandle: {
+          alignSelf: "center",
+          width: 40,
+          height: 4,
+          borderRadius: 2,
+          marginVertical: 6,
+          backgroundColor: "rgba(148, 163, 184, 0.8)",
+     },
+     sheetHeaderRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 8,
+     },
+     sheetTitle: {
+          fontSize: 16,
+          fontWeight: "700",
+     },
+     sheetContent: {
+          paddingTop: 4,
+          paddingBottom: 8,
+          gap: 16,
+     },
+     sheetSection: {
+          gap: 8,
+     },
+     sheetSectionHeader: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+     },
+     sheetSectionTitle: {
+          fontSize: 14,
+          fontWeight: "700",
+     },
+     sheetChipRow: {
+          flexDirection: "row",
+          flexWrap: "wrap",
+          gap: 8,
+     },
+     sheetChip: {
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+          borderRadius: 999,
+          borderWidth: 1.5,
+          gap: 6,
+     },
+     sheetChipText: {
+          fontSize: 13,
+          fontWeight: "600",
      },
      list: {
           flex: 1,
